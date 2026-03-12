@@ -20,7 +20,7 @@ export async function action({ request }) {
 
   // 2. Extract customer details and order info
   const customerName = payload.customer?.first_name || "Customer";
-  const orderNumber = payload.name;
+  const orderNumber = payload.name.replace("#", "");
   const totalAmount = payload.total_price;
 
   // Extract products and quantity

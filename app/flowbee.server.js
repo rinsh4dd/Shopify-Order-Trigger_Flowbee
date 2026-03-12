@@ -16,13 +16,8 @@ export async function sendWhatsAppNotification({ settings, recipientPhone, bodyV
   const url = "https://flowb.io/flowbee/SendWhatsappTemplate";
   
   // Map bodyValues to the expected parameter structure
-  // Based on index.js reference:
-  // bodyValues[0] -> customer_name
-  // bodyValues[1] -> order_id
-  // bodyValues[2] -> product_name
-  // bodyValues[3] -> product_quantity
-  // bodyValues[4] -> order_total
-  const paramNames = ["customer_name", "order_id", "product_name", "product_quantity", "order_total"];
+  // Based on your template: {{customer_id}}, {{order_id}}, {{product}}, {{quantity}}, {{total}}
+  const paramNames = ["customer_id", "order_id", "product", "quantity", "total"];
 
   const payload = {
     phoneno: registeredPhone,
@@ -39,12 +34,13 @@ export async function sendWhatsAppNotification({ settings, recipientPhone, bodyV
     ],
     to: [
       {
-        number: cleanPhone
+        number: cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone
       }
     ]
   };
 
-  console.log(`[FLOWBEE] Sending notification to ${cleanPhone} via ${url}...`);
+  console.log(`[FLOWBEE] Sending notification via ${url}...`);
+  console.log(`[FLOWBEE] Final Payload:`, JSON.stringify(payload, null, 2));
 
   try {
     const response = await fetch(url, {
