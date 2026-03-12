@@ -18,6 +18,7 @@ export async function action({ request }) {
     return new Response("ok");
   }
 
+
   // 2. Extract customer details and order info
   const customerName = payload.customer?.first_name || "Customer";
   const orderNumber = payload.name.replace("#", "");
@@ -50,7 +51,7 @@ export async function action({ request }) {
   logToFile(logData, "orders.log");
 
   try {
-    await sendWhatsAppNotification({
+    const result = await sendWhatsAppNotification({
       settings,
       recipientPhone: recipientPhone,
       bodyValues: [
@@ -61,8 +62,25 @@ export async function action({ request }) {
         totalAmount      // {{5}} Total
       ]
     });
+    
+    // Log success response
+    logToFile({
+      type: "RESPONSE_SUCCESS",
+      orderNumber,
+      response: result,
+      timestamp: new Date().toISOString()
+    }, "orders.log");
+
   } catch (error) {
     console.error(`[WEBHOOK] Failed to send Firebase-based notification for ${orderNumber}:`, error.message);
+    
+    // Log failure response
+    logToFile({
+      type: "RESPONSE_ERROR",
+      orderNumber,
+      error: error.message,
+      timestamp: new Date().toISOString()
+    }, "orders.log");
   }
 
   return new Response("ok");

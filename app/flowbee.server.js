@@ -9,17 +9,24 @@
 export async function sendWhatsAppNotification({ settings, recipientPhone, bodyValues }) {
   const { flowbeeApiKey, flowbeeRegisteredPhone, flowbeeTemplateId } = settings;
 
-  // Ensure phone numbers are in correct format
-  const cleanPhone = recipientPhone.replace(/\D/g, "");
+  // Ensure phone numbers are cleaned of spaces/special chars but keep prefix if present
   const registeredPhone = flowbeeRegisteredPhone.replace(/\D/g, "");
+  const targetRecipient = recipientPhone.replace(/\D/g, "");
 
   const url = "https://flowb.io/flowbee/SendWhatsappTemplate";
   
-  // Map bodyValues to the expected parameter structure
-  // Based on your template: {{customer_id}}, {{order_id}}, {{product}}, {{quantity}}, {{total}}
-  const paramNames = ["customer_id", "order_id", "product", "quantity", "total"];
+  // Map bodyValues to the expected parameter structure based on the template ID
+  let paramNames;
+  if (flowbeeTemplateId === "1503347681154835") {
+    // Shopify Template Params
+    paramNames = ["customer_id", "order_id", "product", "quantity", "total"];
+  } else {
+    // Default / WooCommerce Template Params (1637339700628261)
+    paramNames = ["customer_name", "order_id", "product_name", "product_quantity", "order_total"];
+  }
 
   const payload = {
+    company: settings.flowbeeCompany || "flowbee.io",
     phoneno: registeredPhone,
     templatE_ID: flowbeeTemplateId,
     section: [
@@ -34,12 +41,16 @@ export async function sendWhatsAppNotification({ settings, recipientPhone, bodyV
     ],
     to: [
       {
-        number: cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone
+        number: targetRecipient
       }
     ]
   };
 
-  console.log(`[FLOWBEE] Sending notification via ${url}...`);
+  console.log(`[FLOWBEE] Using Settings:`, {
+    registeredPhone,
+    templateId: flowbeeTemplateId,
+    recipient: targetRecipient
+  });
   console.log(`[FLOWBEE] Final Payload:`, JSON.stringify(payload, null, 2));
 
   try {
@@ -52,15 +63,15 @@ export async function sendWhatsAppNotification({ settings, recipientPhone, bodyV
       body: JSON.stringify(payload)
     });
 
-    // Check if the response is actually JSON before parsing
-    const contentType = response.headers.get("content-type");
+    const responseText = await response.text();
+    console.log("[FLOWBEE] Raw Response:", responseText);
+
     let result;
-    if (contentType && contentType.includes("application/json")) {
-      result = await response.json();
-    } else {
-      const text = await response.text();
-      console.error("[FLOWBEE] Non-JSON response:", text);
-      throw new Error("Flowbee API returned a non-JSON response. Check your API credentials and endpoint.");
+    try {
+      result = JSON.parse(responseText);
+    } catch (e) {
+      console.error("[FLOWBEE] Failed to parse response as JSON:", responseText);
+      throw new Error("Flowbee API returned a non-JSON response.");
     }
 
     if (!response.ok) {

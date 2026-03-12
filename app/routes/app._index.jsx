@@ -32,6 +32,7 @@ export const action = async ({ request }) => {
     const data = {
       shop: session.shop,
       flowbeeApiKey: formData.get("flowbeeApiKey") || "",
+      flowbeeCompany: formData.get("flowbeeCompany") || "",
       flowbeeRegisteredPhone: formData.get("flowbeeRegisteredPhone") || "",
       flowbeeNotifyPhone: formData.get("flowbeeNotifyPhone") || "",
       flowbeeTemplateId: formData.get("flowbeeTemplateId") || "",
@@ -129,6 +130,14 @@ export default function Index() {
                   required
                 />
                 
+                <s-text-field
+                  label="Company Name"
+                  name="flowbeeCompany"
+                  defaultValue={settings?.flowbeeCompany || ""}
+                  required
+                  helpText="Your Flowbee company identifier"
+                />
+
                 <s-text-field
                   label="Registered Phone Number"
                   name="flowbeeRegisteredPhone"
