@@ -28,6 +28,20 @@ shopify app init --template=https://github.com/Shopify/shopify-app-template-reac
 shopify app dev
 ```
 
+Set these Firebase environment variables before starting the app:
+
+```shell
+FIREBASE_API_KEY=
+FIREBASE_AUTH_DOMAIN=
+FIREBASE_PROJECT_ID=
+FIREBASE_STORAGE_BUCKET=
+FIREBASE_MESSAGING_SENDER_ID=
+FIREBASE_APP_ID=
+FIREBASE_MEASUREMENT_ID=
+```
+
+Flowbee API keys are store-specific and are saved per Shopify shop in Firestore through the app settings page. They should not be hardcoded in source.
+
 Press P to open the URL to your app. Once you click install, you can start development.
 
 Local development is powered by [the Shopify CLI](https://shopify.dev/docs/apps/tools/cli). It logs into your account, connects to an app, provides environment variables, updates remote config, creates a tunnel and provides commands to generate extensions.

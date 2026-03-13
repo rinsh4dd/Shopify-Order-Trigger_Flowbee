@@ -3,8 +3,12 @@ import { useFetcher, useLoaderData } from "react-router";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
-import { getFlowbeeSettings, saveFlowbeeSettings } from "../firebase.server";
-import { getAllFlowbeeTemplates } from "../flowbee.server";
+import {
+  createFlowbeeSettingsInput,
+  getFlowbeeSettings,
+  getFlowbeeTemplates,
+  saveFlowbeeSettings,
+} from "../features/flowbee/flowbee-settings.service.server";
 
 export const loader = async ({ request }) => {
   const { session } = await authenticate.admin(request);
@@ -21,7 +25,7 @@ export const action = async ({ request }) => {
     const apiKey = formData.get("flowbeeApiKey");
     const phone = formData.get("flowbeeRegisteredPhone");
     try {
-      const templates = await getAllFlowbeeTemplates(apiKey, phone);
+      const templates = await getFlowbeeTemplates({ apiKey, phone });
       return { success: true, templates, intent: "fetchTemplates" };
     } catch (error) {
       return { success: false, error: error.message, intent: "fetchTemplates" };
@@ -29,14 +33,7 @@ export const action = async ({ request }) => {
   }
 
   if (intent === "save") {
-    const data = {
-      shop: session.shop,
-      flowbeeApiKey: formData.get("flowbeeApiKey") || "",
-      flowbeeCompany: formData.get("flowbeeCompany") || "",
-      flowbeeRegisteredPhone: formData.get("flowbeeRegisteredPhone") || "",
-      flowbeeNotifyPhone: formData.get("flowbeeNotifyPhone") || "",
-      flowbeeTemplateId: formData.get("flowbeeTemplateId") || "",
-    };
+    const data = createFlowbeeSettingsInput({ shop: session.shop, formData });
 
     try {
       await saveFlowbeeSettings(session.shop, data);
