@@ -16,8 +16,4 @@ services:
       - key: SHOPIFY_APP_URL
         sync: false
       - key: DATABASE_URL
-        value: file:/data/dev.sqlite
-    disk:
-      name: sqlite-data
-      mountPath: /data
-      sizeGB: 1
+        value: file:./dev.sqlite
