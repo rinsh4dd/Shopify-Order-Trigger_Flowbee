@@ -52,6 +52,7 @@ export default function Index() {
   const shopify = useAppBridge();
   
   const [templateList, setTemplateList] = useState([]);
+  const [showApiKey, setShowApiKey] = useState(false);
   const formRef = useRef(null);
   const settings = fetcher.data?.settings || initialSettings;
 
@@ -105,27 +106,117 @@ export default function Index() {
   };
 
   return (
-    <s-page heading="WhatsApp Alerts (Firebase)">
-      <s-section heading="Flowbee Credentials">
-        <s-paragraph>
-          Your settings are now securely stored on **Firebase Firestore**.
-        </s-paragraph>
-        
-        <form
-          ref={formRef}
-          onSubmit={handleSave}
-          key={settings?.updatedAt ? "updated" : "empty"}
-        >
-          <s-stack direction="block" gap="base">
-            <s-box padding="base" borderWidth="base" borderRadius="base">
+    <div style={{ backgroundColor: "#FFD600", minHeight: "100vh", padding: "20px" }}>
+      <style>{`
+        .flowbee-card {
+          background: white;
+          border-radius: 16px;
+          box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+          padding: 32px;
+          max-width: 600px;
+          margin: 0 auto;
+        }
+        .flowbee-header {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 24px;
+        }
+        .flowbee-header img {
+          height: 32px;
+        }
+        .flowbee-header h2 {
+          font-size: 24px;
+          font-weight: 700;
+          color: #1a1a1a;
+          margin: 0;
+        }
+        .api-key-container {
+          position: relative;
+          display: flex;
+          align-items: center;
+        }
+        .api-key-toggle {
+          position: absolute;
+          right: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          background: none;
+          border: none;
+          cursor: pointer;
+          color: #6d7175;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 8px;
+          z-index: 10;
+        }
+        .api-key-toggle:hover {
+          color: #1a1a1a;
+        }
+        s-text-field {
+          width: 100%;
+        }
+        .save-button {
+          background-color: #000;
+          color: #fff;
+          border-radius: 8px;
+          padding: 12px 24px;
+          font-weight: 600;
+          border: none;
+          cursor: pointer;
+          transition: all 0.2s;
+          width: 100%;
+          margin-top: 16px;
+        }
+        .save-button:hover {
+          background-color: #333;
+        }
+        .save-button:disabled {
+          background-color: #ccc;
+          cursor: not-allowed;
+        }
+      `}</style>
+
+      <div className="flowbee-card">
+        <div className="flowbee-header">
+          <img src="https://app.flowbee.io/svg/brand-logos/logo-flowbee-secondary.svg" alt="Flowbee Logo" />
+          <h2>Flowbee Settings</h2>
+        </div>
+
+        <s-section>
+          <s-paragraph>
+            Configure your Flowbee credentials to enable WhatsApp order alerts.
+          </s-paragraph>
+          
+          <form
+            ref={formRef}
+            onSubmit={handleSave}
+            key={settings?.updatedAt ? "updated" : "empty"}
+          >
+            <s-stack direction="block" gap="base">
               <s-stack direction="block" gap="base">
-                <s-text-field
-                  label="Flowbee API Key"
-                  name="flowbeeApiKey"
-                  type="password"
-                  defaultValue={settings?.flowbeeApiKey || ""}
-                  required
-                />
+                <div className="api-key-container">
+                  <s-text-field
+                    label="Flowbee API Key"
+                    name="flowbeeApiKey"
+                    type={showApiKey ? "text" : "password"}
+                    defaultValue={settings?.flowbeeApiKey || ""}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="api-key-toggle"
+                    onClick={() => setShowApiKey(!showApiKey)}
+                    aria-label={showApiKey ? "Hide API Key" : "Show API Key"}
+                  >
+                    {showApiKey ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    )}
+                  </button>
+                </div>
                 
                 <s-text-field
                   label="Company Name"
@@ -187,21 +278,20 @@ export default function Index() {
                   </select>
                 </s-stack>
               </s-stack>
-            </s-box>
-            
-            <s-button
-              variant="primary"
-              type="button"
-              onClick={() => submitSettings(formRef.current)}
-              disabled={fetcher.state !== "idle"}
-              {...(fetcher.state !== "idle" ? { loading: true } : {})}
-            >
-              Save Settings to Firebase
-            </s-button>
-          </s-stack>
-        </form>
-      </s-section>
-    </s-page>
+              
+              <button
+                className="save-button"
+                type="button"
+                onClick={() => submitSettings(formRef.current)}
+                disabled={fetcher.state !== "idle"}
+              >
+                {fetcher.state !== "idle" ? "Saving..." : "Save Settings to Firebase"}
+              </button>
+            </s-stack>
+          </form>
+        </s-section>
+      </div>
+    </div>
   );
 }
 
