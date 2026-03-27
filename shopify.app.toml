@@ -2,7 +2,7 @@
 
 client_id = "c33fe6408f35ba34a678e23f15c7aa75"
 name = "flowbee-whatsapp"
-application_url = "https://example.com"
+application_url = "https://flowbee-whatsapp.onrender.com"
 embedded = true
 
 [build]
@@ -29,4 +29,4 @@ api_version = "2026-04"
 scopes = "read_orders"
 
 [auth]
-redirect_urls = [ "https://example.com/api/auth" ]
+redirect_urls = [ "https://flowbee-whatsapp.onrender.com/api/auth" ]
