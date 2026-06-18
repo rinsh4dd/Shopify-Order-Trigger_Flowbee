@@ -11,7 +11,7 @@ function resolveSettingsShop(shop) {
   return shop === SHOPIFY_CLI_WEBHOOK_STORE ? FLOWBEE_DEV_STORE : shop;
 }
 
-export async function processOrderCreatedWebhook({ shop, topic, payload }) {
+export async function processOrderWebhook({ shop, topic, payload }) {
   const settingsShop = resolveSettingsShop(shop);
   const settings = await getFlowbeeSettings(settingsShop);
 
@@ -28,32 +28,76 @@ export async function processOrderCreatedWebhook({ shop, topic, payload }) {
   }
 
   const orderDetails = mapShopifyOrderToNotificationDetails(payload);
+  
+  let templateId = "";
+  let bodyValues = [];
+
+  if (topic === "orders/create") {
+    templateId = settings.flowbeeTemplateOrderCreated || settings.flowbeeTemplateId;
+    bodyValues = [
+      orderDetails.customerId,
+      orderDetails.orderNumber,
+      orderDetails.productNames,
+      orderDetails.totalQuantity,
+      orderDetails.totalAmount,
+    ];
+  } else if (topic === "orders/paid") {
+    templateId = settings.flowbeeTemplateOrderPaid;
+    bodyValues = [
+      orderDetails.customerId,
+      orderDetails.orderNumber,
+      orderDetails.totalAmount,
+    ];
+  } else if (topic === "orders/fulfilled") {
+    templateId = settings.flowbeeTemplateOrderFulfilled;
+    bodyValues = [
+      orderDetails.customerId,
+      orderDetails.orderNumber,
+      orderDetails.productNames,
+      orderDetails.trackingNumber,
+    ];
+  } else if (topic === "orders/cancelled") {
+    templateId = settings.flowbeeTemplateOrderCancelled;
+    bodyValues = [
+      orderDetails.customerId,
+      orderDetails.orderNumber,
+      orderDetails.totalAmount,
+    ];
+  } else {
+    console.log(`[WEBHOOK] Topic ${topic} not handled. Skipping.`);
+    return { ok: true, skipped: "unhandled_topic" };
+  }
+
+  if (!templateId) {
+    console.log(`[WEBHOOK] No template configured in Firebase for topic ${topic}. Skipping.`);
+    return { ok: true, skipped: "missing_template_id" };
+  }
+
   const logData = {
     shop: settingsShop,
+    topic,
+    templateId,
     ...orderDetails,
     recipientPhone: settings.flowbeeNotifyPhone,
     timestamp: new Date().toISOString(),
   };
 
-  console.log("[WEBHOOK] Order Details:", logData);
+  console.log("[WEBHOOK] Order Event Details:", logData);
   logToFile(logData, "orders.log");
 
   try {
     const result = await sendFlowbeeTemplateMessage({
       settings,
       recipientPhone: settings.flowbeeNotifyPhone,
-      bodyValues: [
-        orderDetails.customerId,
-        orderDetails.orderNumber,
-        orderDetails.productNames,
-        orderDetails.totalQuantity,
-        orderDetails.totalAmount,
-      ],
+      bodyValues,
+      templateId,
     });
 
     logToFile(
       {
         type: "RESPONSE_SUCCESS",
+        topic,
+        templateId,
         orderNumber: orderDetails.orderNumber,
         response: result,
         timestamp: new Date().toISOString(),
@@ -71,6 +115,8 @@ export async function processOrderCreatedWebhook({ shop, topic, payload }) {
     logToFile(
       {
         type: "RESPONSE_ERROR",
+        topic,
+        templateId,
         orderNumber: orderDetails.orderNumber,
         error: error.message,
         timestamp: new Date().toISOString(),
@@ -80,4 +126,8 @@ export async function processOrderCreatedWebhook({ shop, topic, payload }) {
 
     return { ok: false, skipped: null, error };
   }
+}
+
+export async function processOrderCreatedWebhook({ shop, topic, payload }) {
+  return processOrderWebhook({ shop, topic, payload });
 }

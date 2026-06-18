@@ -16,14 +16,15 @@ function getTemplateParameterNames(templateId) {
   );
 }
 
-function buildTemplatePayload({ settings, recipientPhone, bodyValues }) {
+function buildTemplatePayload({ settings, recipientPhone, bodyValues, templateId }) {
   const registeredPhone = normalizePhoneNumber(settings.flowbeeRegisteredPhone);
   const targetRecipient = normalizePhoneNumber(recipientPhone);
-  const parameterNames = getTemplateParameterNames(settings.flowbeeTemplateId);
+  const activeTemplateId = templateId || settings.flowbeeTemplateId;
+  const parameterNames = getTemplateParameterNames(activeTemplateId);
 
   if (!Array.isArray(parameterNames)) {
     throw new Error(
-      `No parameter mapping found for template ${settings.flowbeeTemplateId}`,
+      `No parameter mapping found for template ${activeTemplateId}`,
     );
   }
 
@@ -34,7 +35,7 @@ function buildTemplatePayload({ settings, recipientPhone, bodyValues }) {
   return {
     company: settings.flowbeeCompany || FLOWBEE_COMPANY_FALLBACK,
     phoneno: registeredPhone,
-    templatE_ID: settings.flowbeeTemplateId,
+    templatE_ID: activeTemplateId,
     section: [
       {
         section: "BODY",
@@ -70,16 +71,17 @@ export async function sendFlowbeeTemplateMessage({
   settings,
   recipientPhone,
   bodyValues,
+  templateId,
 }) {
   let payload;
 
   try {
-    payload = buildTemplatePayload({ settings, recipientPhone, bodyValues });
+    payload = buildTemplatePayload({ settings, recipientPhone, bodyValues, templateId });
 
     logToFile(
       {
         type: "FLOWBEE_REQUEST",
-        templateId: settings.flowbeeTemplateId,
+        templateId: templateId || settings.flowbeeTemplateId,
         recipientPhone,
         bodyValues,
         payload,

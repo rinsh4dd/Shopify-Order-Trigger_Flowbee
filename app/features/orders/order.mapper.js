@@ -11,6 +11,7 @@ export function mapShopifyOrderToNotificationDetails(payload) {
     payload.line_items?.map((item) => item.title)?.join(", ") || "N/A";
   const totalQuantity =
     payload.line_items?.reduce((quantity, item) => quantity + item.quantity, 0) || 0;
+  const trackingNumber = payload.fulfillments?.[0]?.tracking_number || "N/A";
 
   return {
     customerId,
@@ -19,5 +20,6 @@ export function mapShopifyOrderToNotificationDetails(payload) {
     totalAmount,
     productNames,
     totalQuantity,
+    trackingNumber,
   };
 }

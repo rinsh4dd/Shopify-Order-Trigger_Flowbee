@@ -130,6 +130,10 @@ export default function Index() {
     formData.append("flowbeeRegisteredPhone", registeredPhone);
     formData.append("flowbeeNotifyPhone", notifyPhone);
     formData.append("flowbeeTemplateId", data["flowbeeTemplateId"] || "");
+    formData.append("flowbeeTemplateOrderCreated", data["flowbeeTemplateOrderCreated"] || "");
+    formData.append("flowbeeTemplateOrderPaid", data["flowbeeTemplateOrderPaid"] || "");
+    formData.append("flowbeeTemplateOrderFulfilled", data["flowbeeTemplateOrderFulfilled"] || "");
+    formData.append("flowbeeTemplateOrderCancelled", data["flowbeeTemplateOrderCancelled"] || "");
 
     fetcher.submit(formData, { method: "post" });
   };
@@ -331,38 +335,131 @@ export default function Index() {
 
               <s-stack direction="block" gap="small">
                 <s-stack direction="inline" align="center" justify="space-between">
-                  <s-text variant="headingSm">WhatsApp Template</s-text>
+                  <s-text variant="headingSm">WhatsApp Templates Configuration</s-text>
                   <s-button onClick={handleFetch} disabled={isFetching}>
                      {isFetching ? "Fetching..." : "Fetch Templates"}
                   </s-button>
                 </s-stack>
 
-                <select 
-                  name="flowbeeTemplateId" 
-                  defaultValue={settings?.flowbeeTemplateId || ""} 
-                  required
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    borderRadius: '8px',
-                    border: '1px solid #c9cccf',
-                    background: 'white',
-                    fontSize: '14px',
-                    height: '40px'
-                  }}
-                >
-                  <option value="">-- Select Template --</option>
-                  {templateList.map((t) => (
-                    <option key={t.template_id || t.id} value={t.template_id || t.id}>
-                      {t.template_name || t.name} ({t.template_id || t.id})
-                    </option>
-                  ))}
-                  {settings?.flowbeeTemplateId && !templateList.some(t => (t.template_id || t.id) === settings.flowbeeTemplateId) && (
-                    <option value={settings.flowbeeTemplateId}>
-                      Saved: {settings.flowbeeTemplateId}
-                    </option>
-                  )}
-                </select>
+                {/* 1. Order Created */}
+                <div>
+                  <span className="field-label">Order Created Template</span>
+                  <select 
+                    name="flowbeeTemplateOrderCreated" 
+                    defaultValue={settings?.flowbeeTemplateOrderCreated || settings?.flowbeeTemplateId || ""} 
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      borderRadius: '8px',
+                      border: '1px solid #c9cccf',
+                      background: 'white',
+                      fontSize: '14px',
+                      height: '40px'
+                    }}
+                  >
+                    <option value="">-- Select Template --</option>
+                    {templateList.map((t) => (
+                      <option key={t.template_id || t.id} value={t.template_id || t.id}>
+                        {t.template_name || t.name} ({t.template_id || t.id})
+                      </option>
+                    ))}
+                    {(settings?.flowbeeTemplateOrderCreated || settings?.flowbeeTemplateId) && !templateList.some(t => (t.template_id || t.id) === (settings.flowbeeTemplateOrderCreated || settings.flowbeeTemplateId)) && (
+                      <option value={settings.flowbeeTemplateOrderCreated || settings.flowbeeTemplateId}>
+                        Saved: {settings.flowbeeTemplateOrderCreated || settings.flowbeeTemplateId}
+                      </option>
+                    )}
+                  </select>
+                </div>
+
+                {/* 2. Order Paid */}
+                <div>
+                  <span className="field-label">Order Paid Template</span>
+                  <select 
+                    name="flowbeeTemplateOrderPaid" 
+                    defaultValue={settings?.flowbeeTemplateOrderPaid || ""} 
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      borderRadius: '8px',
+                      border: '1px solid #c9cccf',
+                      background: 'white',
+                      fontSize: '14px',
+                      height: '40px'
+                    }}
+                  >
+                    <option value="">-- Select Template --</option>
+                    {templateList.map((t) => (
+                      <option key={t.template_id || t.id} value={t.template_id || t.id}>
+                        {t.template_name || t.name} ({t.template_id || t.id})
+                      </option>
+                    ))}
+                    {settings?.flowbeeTemplateOrderPaid && !templateList.some(t => (t.template_id || t.id) === settings.flowbeeTemplateOrderPaid) && (
+                      <option value={settings.flowbeeTemplateOrderPaid}>
+                        Saved: {settings.flowbeeTemplateOrderPaid}
+                      </option>
+                    )}
+                  </select>
+                </div>
+
+                {/* 3. Order Shipped / Fulfilled */}
+                <div>
+                  <span className="field-label">Order Shipped / Fulfilled Template</span>
+                  <select 
+                    name="flowbeeTemplateOrderFulfilled" 
+                    defaultValue={settings?.flowbeeTemplateOrderFulfilled || ""} 
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      borderRadius: '8px',
+                      border: '1px solid #c9cccf',
+                      background: 'white',
+                      fontSize: '14px',
+                      height: '40px'
+                    }}
+                  >
+                    <option value="">-- Select Template --</option>
+                    {templateList.map((t) => (
+                      <option key={t.template_id || t.id} value={t.template_id || t.id}>
+                        {t.template_name || t.name} ({t.template_id || t.id})
+                      </option>
+                    ))}
+                    {settings?.flowbeeTemplateOrderFulfilled && !templateList.some(t => (t.template_id || t.id) === settings.flowbeeTemplateOrderFulfilled) && (
+                      <option value={settings.flowbeeTemplateOrderFulfilled}>
+                        Saved: {settings.flowbeeTemplateOrderFulfilled}
+                      </option>
+                    )}
+                  </select>
+                </div>
+
+                {/* 4. Order Cancelled */}
+                <div>
+                  <span className="field-label">Order Cancelled Template</span>
+                  <select 
+                    name="flowbeeTemplateOrderCancelled" 
+                    defaultValue={settings?.flowbeeTemplateOrderCancelled || ""} 
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      borderRadius: '8px',
+                      border: '1px solid #c9cccf',
+                      background: 'white',
+                      fontSize: '14px',
+                      height: '40px'
+                    }}
+                  >
+                    <option value="">-- Select Template --</option>
+                    {templateList.map((t) => (
+                      <option key={t.template_id || t.id} value={t.template_id || t.id}>
+                        {t.template_name || t.name} ({t.template_id || t.id})
+                      </option>
+                    ))}
+                    {settings?.flowbeeTemplateOrderCancelled && !templateList.some(t => (t.template_id || t.id) === settings.flowbeeTemplateOrderCancelled) && (
+                      <option value={settings.flowbeeTemplateOrderCancelled}>
+                        Saved: {settings.flowbeeTemplateOrderCancelled}
+                      </option>
+                    )}
+                  </select>
+                </div>
               </s-stack>
             </s-stack>
             
