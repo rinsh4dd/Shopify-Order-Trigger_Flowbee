@@ -3,24 +3,29 @@ import { getFlowbeeSettings } from "../flowbee/flowbee-settings.service.server";
 import { sendFlowbeeTemplateMessage } from "../flowbee/flowbee-api.server";
 
 export async function processCheckoutWebhook({ shop, payload, topic }) {
+  console.log(`[WEBHOOK] Received checkout event: ${topic} for shop: ${shop}`);
+  console.log(`[WEBHOOK] Raw Checkout Payload:`, JSON.stringify(payload, null, 2));
+
   const checkoutId = payload.id || payload.cart_token;
-  if (!checkoutId) return;
+  if (!checkoutId) {
+    console.log("[WEBHOOK] No checkout ID or cart token found in payload.");
+    return;
+  }
 
   const phone = payload.phone || payload.customer?.phone || payload.shipping_address?.phone || payload.billing_address?.phone;
   if (!phone) {
-    console.log(`[WEBHOOK] Checkout ${checkoutId} has no customer phone number. Skipping.`);
+    console.log(`[WEBHOOK] Checkout ${checkoutId} has no customer phone number. Skipping notification.`);
     return;
   }
 
   const normalizedPhone = String(phone).replace(/\D/g, "");
+  console.log(`[WEBHOOK] Checkout ${checkoutId} has phone: ${normalizedPhone}`);
 
   const customerName = payload.customer?.first_name || "Customer";
   const checkoutUrl = payload.abandoned_checkout_url || "";
   const products = payload.line_items?.map(item => item.title).join(", ") || "N/A";
   const quantity = payload.line_items?.reduce((acc, item) => acc + item.quantity, 0) || 0;
   const totalPrice = payload.total_price || "0.00";
-
-  console.log(`[WEBHOOK] Received checkout event: ${topic} for checkout ${checkoutId}`);
 
   // 1. Store/update checkout record
   const existing = await getCheckoutRecord(checkoutId);
