@@ -4,25 +4,23 @@ import { processOrderCreatedWebhook } from "../features/orders/order-notificatio
 export async function action({ request }) {
   let shop, payload, topic;
 
+  // Clone request BEFORE it gets consumed
+  const clonedRequest = request.clone();
+
   try {
     const authResult = await authenticate.webhook(request);
     shop = authResult.shop;
     payload = authResult.payload;
     topic = authResult.topic;
   } catch (error) {
-    console.log(
-      "[WEBHOOK] App signature validation failed, falling back to manual parsing:",
-      error.message,
-    );
-
+    console.log("[WEBHOOK] App signature validation failed, falling back to manual parsing:", error.message);
+    
     // Extract details manually from Shopify headers
-    shop =
-      request.headers.get("x-shopify-shop-domain") ||
-      "flowbee-dev.myshopify.com";
-    topic = request.headers.get("x-shopify-topic") || "orders/create";
-
+    shop = clonedRequest.headers.get("x-shopify-shop-domain") || "flowbee-dev.myshopify.com";
+    topic = clonedRequest.headers.get("x-shopify-topic") || "orders/create";
+    
     try {
-      const rawBody = await request.clone().text();
+      const rawBody = await clonedRequest.text();
       payload = JSON.parse(rawBody);
     } catch (e) {
       console.error("[WEBHOOK] Failed to parse raw body:", e.message);
