@@ -38,8 +38,6 @@ export async function processOrderWebhook({ shop, topic, payload }) {
       orderDetails.customerId,
       orderDetails.orderNumber,
       orderDetails.productNames,
-      orderDetails.totalQuantity,
-      orderDetails.totalAmount,
     ];
   } else if (topic === "orders/paid") {
     templateId = settings.flowbeeTemplateOrderPaid;
@@ -54,7 +52,6 @@ export async function processOrderWebhook({ shop, topic, payload }) {
       orderDetails.customerId,
       orderDetails.orderNumber,
       orderDetails.productNames,
-      orderDetails.trackingNumber,
     ];
   } else if (topic === "orders/cancelled") {
     templateId = settings.flowbeeTemplateOrderCancelled;
