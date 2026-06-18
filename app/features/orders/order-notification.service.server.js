@@ -6,6 +6,7 @@ import {
 } from "../flowbee/flowbee.constants";
 import { mapShopifyOrderToNotificationDetails } from "./order.mapper";
 import { logToFile } from "../../utils/logger.server";
+import { saveCheckoutRecord } from "./checkout-notification.repository.server";
 
 function resolveSettingsShop(shop) {
   return shop === SHOPIFY_CLI_WEBHOOK_STORE ? FLOWBEE_DEV_STORE : shop;
@@ -16,6 +17,16 @@ export async function processOrderWebhook({ shop, topic, payload }) {
   const settings = await getFlowbeeSettings(settingsShop);
 
   console.log(`[WEBHOOK] Received ${topic} for ${shop} (Firebase Mode)`);
+
+  const checkoutId = payload.checkout_id || payload.cart_token;
+  if (checkoutId) {
+    try {
+      await saveCheckoutRecord(checkoutId, { completed: true });
+      console.log(`[WEBHOOK] Marked checkout ${checkoutId} as completed.`);
+    } catch (e) {
+      console.error(`[WEBHOOK] Failed to mark checkout ${checkoutId} as completed:`, e.message);
+    }
+  }
 
   if (!settings) {
     console.log(`[WEBHOOK] No Flowbee settings found in Firebase for ${shop}. Skipping.`);

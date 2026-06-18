@@ -134,6 +134,7 @@ export default function Index() {
     formData.append("flowbeeTemplateOrderPaid", data["flowbeeTemplateOrderPaid"] || "");
     formData.append("flowbeeTemplateOrderFulfilled", data["flowbeeTemplateOrderFulfilled"] || "");
     formData.append("flowbeeTemplateOrderCancelled", data["flowbeeTemplateOrderCancelled"] || "");
+    formData.append("flowbeeTemplateAbandonedCart", data["flowbeeTemplateAbandonedCart"] || "");
 
     fetcher.submit(formData, { method: "post" });
   };
@@ -456,6 +457,36 @@ export default function Index() {
                     {settings?.flowbeeTemplateOrderCancelled && !templateList.some(t => (t.template_id || t.id) === settings.flowbeeTemplateOrderCancelled) && (
                       <option value={settings.flowbeeTemplateOrderCancelled}>
                         Saved: {settings.flowbeeTemplateOrderCancelled}
+                      </option>
+                    )}
+                  </select>
+                </div>
+
+                {/* 5. Abandoned Cart */}
+                <div>
+                  <span className="field-label">Abandoned Cart Template</span>
+                  <select 
+                    name="flowbeeTemplateAbandonedCart" 
+                    defaultValue={settings?.flowbeeTemplateAbandonedCart || ""} 
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      borderRadius: '8px',
+                      border: '1px solid #c9cccf',
+                      background: 'white',
+                      fontSize: '14px',
+                      height: '40px'
+                    }}
+                  >
+                    <option value="">-- Select Template --</option>
+                    {templateList.map((t) => (
+                      <option key={t.template_id || t.id} value={t.template_id || t.id}>
+                        {t.template_name || t.name} ({t.template_id || t.id})
+                      </option>
+                    ))}
+                    {settings?.flowbeeTemplateAbandonedCart && !templateList.some(t => (t.template_id || t.id) === settings.flowbeeTemplateAbandonedCart) && (
+                      <option value={settings.flowbeeTemplateAbandonedCart}>
+                        Saved: {settings.flowbeeTemplateAbandonedCart}
                       </option>
                     )}
                   </select>

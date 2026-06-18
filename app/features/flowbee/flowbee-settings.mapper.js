@@ -10,5 +10,6 @@ export function buildFlowbeeSettingsInput({ shop, formData }) {
     flowbeeTemplateOrderPaid: formData.get("flowbeeTemplateOrderPaid") || "",
     flowbeeTemplateOrderFulfilled: formData.get("flowbeeTemplateOrderFulfilled") || "",
     flowbeeTemplateOrderCancelled: formData.get("flowbeeTemplateOrderCancelled") || "",
+    flowbeeTemplateAbandonedCart: formData.get("flowbeeTemplateAbandonedCart") || "",
   };
 }
