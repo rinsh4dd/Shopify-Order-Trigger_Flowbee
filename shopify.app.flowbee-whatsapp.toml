@@ -23,10 +23,6 @@ api_version = "2026-07"
   topics = [ "orders/create", "orders/paid", "orders/fulfilled", "orders/cancelled" ]
   uri = "/webhooks/order-create"
 
-  [[webhooks.subscriptions]]
-  topics = [ "checkouts/create", "checkouts/update" ]
-  uri = "/webhooks/checkout"
-
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
 scopes = "read_orders"
