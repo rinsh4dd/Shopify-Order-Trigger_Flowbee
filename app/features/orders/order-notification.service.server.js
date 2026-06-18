@@ -32,33 +32,51 @@ export async function processOrderWebhook({ shop, topic, payload }) {
   let templateId = "";
   let bodyValues = [];
 
+  const customerNameVal = orderDetails.customerName || "Customer";
+  const orderNoVal = orderDetails.orderNumber || "N/A";
+  const productsVal = orderDetails.productNames || "N/A";
+  const qtyVal = String(orderDetails.totalQuantity || 0);
+  const totalVal = orderDetails.totalAmount || "0.00";
+
   if (topic === "orders/create") {
     templateId = settings.flowbeeTemplateOrderCreated || settings.flowbeeTemplateId;
     bodyValues = [
-      orderDetails.customerId,
-      orderDetails.orderNumber,
-      orderDetails.productNames,
+      customerNameVal,
+      orderNoVal,
+      productsVal,
+      qtyVal,
+      totalVal,
+      "Created"
     ];
   } else if (topic === "orders/paid") {
     templateId = settings.flowbeeTemplateOrderPaid;
     bodyValues = [
-      orderDetails.customerId,
-      orderDetails.orderNumber,
-      orderDetails.totalAmount,
+      customerNameVal,
+      orderNoVal,
+      productsVal,
+      qtyVal,
+      totalVal,
+      "Paid"
     ];
   } else if (topic === "orders/fulfilled") {
     templateId = settings.flowbeeTemplateOrderFulfilled;
     bodyValues = [
-      orderDetails.customerId,
-      orderDetails.orderNumber,
-      orderDetails.productNames,
+      customerNameVal,
+      orderNoVal,
+      productsVal,
+      qtyVal,
+      totalVal,
+      "Fulfilled"
     ];
   } else if (topic === "orders/cancelled") {
     templateId = settings.flowbeeTemplateOrderCancelled;
     bodyValues = [
-      orderDetails.customerId,
-      orderDetails.orderNumber,
-      orderDetails.totalAmount,
+      customerNameVal,
+      orderNoVal,
+      productsVal,
+      qtyVal,
+      totalVal,
+      "Cancelled"
     ];
   } else {
     console.log(`[WEBHOOK] Topic ${topic} not handled. Skipping.`);

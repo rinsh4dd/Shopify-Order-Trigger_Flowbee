@@ -16,7 +16,12 @@ function getTemplateParameterNames(templateId) {
   );
 }
 
-function buildTemplatePayload({ settings, recipientPhone, bodyValues, templateId }) {
+function buildTemplatePayload({
+  settings,
+  recipientPhone,
+  bodyValues,
+  templateId,
+}) {
   const registeredPhone = normalizePhoneNumber(settings.flowbeeRegisteredPhone);
   const targetRecipient = normalizePhoneNumber(recipientPhone);
   const activeTemplateId = templateId || settings.flowbeeTemplateId;
@@ -76,7 +81,12 @@ export async function sendFlowbeeTemplateMessage({
   let payload;
 
   try {
-    payload = buildTemplatePayload({ settings, recipientPhone, bodyValues, templateId });
+    payload = buildTemplatePayload({
+      settings,
+      recipientPhone,
+      bodyValues,
+      templateId,
+    });
 
     logToFile(
       {
