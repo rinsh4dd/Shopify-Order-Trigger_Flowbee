@@ -43,7 +43,7 @@ export async function processCheckoutWebhook({ shop, payload, topic }) {
   });
 
   // 2. Schedule the notification (e.g. after 30 minutes)
-  const delayMs = 30 * 60 * 1000;
+  const delayMs = 10 * 1000; // 10 seconds for testing
 
   setTimeout(async () => {
     try {
