@@ -6,5 +6,12 @@ export const FLOWBEE_DEV_STORE = "flowbee-dev.myshopify.com";
 export const SHOPIFY_CLI_WEBHOOK_STORE = "shop.myshopify.com";
 
 export const TEMPLATE_PARAMETER_NAMES = {
-  default: ["1", "2", "3", "4", "5", "6"],
+  default: [
+    "customer_name",
+    "order_id",
+    "product",
+    "quantity",
+    "total",
+    "status",
+  ],
 };
