@@ -127,7 +127,7 @@ export async function fetchFlowbeeTemplates(apiKey, phone) {
     }),
   });
 
-  const result = await response.json();
+  const result = await parseJsonResponse(response);
 
   if (!response.ok) {
     console.error("[FLOWBEE] Template fetch error:", JSON.stringify(result));
