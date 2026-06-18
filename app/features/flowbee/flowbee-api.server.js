@@ -47,13 +47,14 @@ function buildTemplatePayload({ settings, recipientPhone, bodyValues }) {
 
 async function parseJsonResponse(response) {
   const responseText = await response.text();
+  console.log(`[FLOWBEE] Response Status: ${response.status} ${response.statusText}`);
   console.log("[FLOWBEE] Raw Response:", responseText);
 
   try {
     return JSON.parse(responseText);
   } catch (error) {
     console.error("[FLOWBEE] Failed to parse response as JSON:", responseText);
-    throw new Error("Flowbee API returned a non-JSON response.");
+    throw new Error(`Flowbee API returned a non-JSON response (Status: ${response.status}).`);
   }
 }
 
