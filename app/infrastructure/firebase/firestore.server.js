@@ -1,16 +1,6 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
-const firebaseFallbackConfig = {
-  apiKey: "AIzaSyCMiAtztVPErzHNe1NW_QhHHXiD25CkEqY",
-  authDomain: "shopifynotifier-6cb51.firebaseapp.com",
-  projectId: "shopifynotifier-6cb51",
-  storageBucket: "shopifynotifier-6cb51.firebasestorage.app",
-  messagingSenderId: "701961286690",
-  appId: "1:701961286690:web:a62497eed24a340600067b",
-  measurementId: "G-WV7X5RDDT4",
-};
-
 function getFirebaseConfig() {
   const config = {
     apiKey: process.env.FIREBASE_API_KEY,
@@ -26,24 +16,16 @@ function getFirebaseConfig() {
     .filter(([, value]) => !value)
     .map(([key]) => key);
 
-  if (missingKeys.length === Object.keys(config).length) {
-    return firebaseFallbackConfig;
-  }
-
   if (missingKeys.length > 0) {
-    console.warn(
-      `[FIREBASE] Partial environment config detected. Falling back to bundled config. Missing: ${missingKeys.join(", ")}`,
+    throw new Error(
+      `[FIREBASE] Missing required environment variables: ${missingKeys.join(", ")}. ` +
+      "Please set them in your .env file or hosting environment."
     );
-    return firebaseFallbackConfig;
   }
 
   return config;
 }
 
-const firebaseConfig = {
-  ...getFirebaseConfig(),
-};
-
-const firebaseApp = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+const firebaseApp = getApps().length > 0 ? getApp() : initializeApp(getFirebaseConfig());
 
 export const firestore = getFirestore(firebaseApp);
