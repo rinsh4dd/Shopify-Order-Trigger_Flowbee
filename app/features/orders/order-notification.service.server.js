@@ -8,11 +8,30 @@ import { mapShopifyOrderToNotificationDetails } from "./order.mapper";
 import { logToFile } from "../../utils/logger.server";
 import { saveCheckoutRecord } from "./checkout-notification.repository.server";
 
+const processedWebhooks = new Set();
+setInterval(() => {
+  processedWebhooks.clear();
+}, 10 * 60 * 1000);
+
 function resolveSettingsShop(shop) {
   return shop === SHOPIFY_CLI_WEBHOOK_STORE ? FLOWBEE_DEV_STORE : shop;
 }
 
-export async function processOrderWebhook({ shop, topic, payload }) {
+export async function processOrderWebhook({ shop, topic, payload, webhookId }) {
+  if (webhookId) {
+    if (processedWebhooks.has(webhookId)) {
+      console.log(`[WEBHOOK] Duplicate webhook detected: ${webhookId}. Skipping.`);
+      return { ok: true, skipped: "duplicate" };
+    }
+    processedWebhooks.add(webhookId);
+  }
+
+  // Prevent double messaging: if an order is created and already paid, orders/paid will handle it.
+  if (topic === "orders/create" && payload.financial_status === "paid") {
+    console.log(`[WEBHOOK] Order ${payload.name} is already paid. Skipping orders/create notification.`);
+    return { ok: true, skipped: "already_paid" };
+  }
+
   const settingsShop = resolveSettingsShop(shop);
   const settings = await getFlowbeeSettings(settingsShop);
 
@@ -154,6 +173,6 @@ export async function processOrderWebhook({ shop, topic, payload }) {
   }
 }
 
-export async function processOrderCreatedWebhook({ shop, topic, payload }) {
-  return processOrderWebhook({ shop, topic, payload });
+export async function processOrderCreatedWebhook({ shop, topic, payload, webhookId }) {
+  return processOrderWebhook({ shop, topic, payload, webhookId });
 }

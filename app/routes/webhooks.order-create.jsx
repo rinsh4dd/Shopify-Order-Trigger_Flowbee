@@ -28,7 +28,9 @@ export async function action({ request }) {
     }
   }
 
-  await processOrderCreatedWebhook({ shop, payload, topic });
+  const webhookId = clonedRequest.headers.get("x-shopify-webhook-id") || "";
+
+  await processOrderCreatedWebhook({ shop, payload, topic, webhookId });
 
   return new Response("ok");
 }
