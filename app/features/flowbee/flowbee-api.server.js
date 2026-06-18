@@ -11,7 +11,9 @@ function normalizePhoneNumber(phoneNumber) {
 }
 
 function getTemplateParameterNames(templateId) {
-  return TEMPLATE_PARAMETER_NAMES[templateId] || TEMPLATE_PARAMETER_NAMES.default;
+  return (
+    TEMPLATE_PARAMETER_NAMES[templateId] || TEMPLATE_PARAMETER_NAMES.default
+  );
 }
 
 function buildTemplatePayload({ settings, recipientPhone, bodyValues }) {
@@ -20,7 +22,9 @@ function buildTemplatePayload({ settings, recipientPhone, bodyValues }) {
   const parameterNames = getTemplateParameterNames(settings.flowbeeTemplateId);
 
   if (!Array.isArray(parameterNames)) {
-    throw new Error(`No parameter mapping found for template ${settings.flowbeeTemplateId}`);
+    throw new Error(
+      `No parameter mapping found for template ${settings.flowbeeTemplateId}`,
+    );
   }
 
   if (!Array.isArray(bodyValues)) {
@@ -47,18 +51,26 @@ function buildTemplatePayload({ settings, recipientPhone, bodyValues }) {
 
 async function parseJsonResponse(response) {
   const responseText = await response.text();
-  console.log(`[FLOWBEE] Response Status: ${response.status} ${response.statusText}`);
+  console.log(
+    `[FLOWBEE] Response Status: ${response.status} ${response.statusText}`,
+  );
   console.log("[FLOWBEE] Raw Response:", responseText);
 
   try {
     return JSON.parse(responseText);
   } catch (error) {
     console.error("[FLOWBEE] Failed to parse response as JSON:", responseText);
-    throw new Error(`Flowbee API returned a non-JSON response (Status: ${response.status}).`);
+    throw new Error(
+      `Flowbee API returned a non-JSON response (Status: ${response.status}).`,
+    );
   }
 }
 
-export async function sendFlowbeeTemplateMessage({ settings, recipientPhone, bodyValues }) {
+export async function sendFlowbeeTemplateMessage({
+  settings,
+  recipientPhone,
+  bodyValues,
+}) {
   let payload;
 
   try {
@@ -94,7 +106,10 @@ export async function sendFlowbeeTemplateMessage({ settings, recipientPhone, bod
       throw new Error(result.message || "Failed to send WhatsApp notification");
     }
 
-    console.log("[FLOWBEE] Notification sent successfully:", JSON.stringify(result));
+    console.log(
+      "[FLOWBEE] Notification sent successfully:",
+      JSON.stringify(result),
+    );
     return result;
   } catch (error) {
     logToFile(
@@ -118,14 +133,10 @@ export async function fetchFlowbeeTemplates(apiKey, phone) {
   console.log("[FLOWBEE] Fetching all templates for phone:", phone);
 
   const response = await fetch(FLOWBEE_LIST_TEMPLATES_URL, {
-    method: "POST",
+    method: "GET",
     headers: {
-      "Content-Type": "application/json",
       "x-api-key": apiKey,
     },
-    body: JSON.stringify({
-      COMPANY: phone || "",
-    }),
   });
 
   const result = await parseJsonResponse(response);
