@@ -139,6 +139,8 @@ export default function Index() {
     submitSettings(event.currentTarget);
   };
 
+  const isSaving = fetcher.state !== "idle" && fetcher.formData?.get("intent") === "save";
+  const isFetching = fetcher.state !== "idle" && fetcher.formData?.get("intent") === "fetchTemplates";
   const regPhone = splitPhone(settings?.flowbeeRegisteredPhone);
   const notifyPhone = splitPhone(settings?.flowbeeNotifyPhone);
 
@@ -246,7 +248,7 @@ export default function Index() {
            color: #4a4a4a;
            margin-bottom: 6px;
            display: block;
-        }
+         }
       `}</style>
 
       <div className="flowbee-card">
@@ -330,8 +332,8 @@ export default function Index() {
               <s-stack direction="block" gap="small">
                 <s-stack direction="inline" align="center" justify="space-between">
                   <s-text variant="headingSm">WhatsApp Template</s-text>
-                  <s-button onClick={handleFetch} disabled={fetcher.state !== "idle"}>
-                     Fetch Templates
+                  <s-button onClick={handleFetch} disabled={isFetching}>
+                     {isFetching ? "Fetching..." : "Fetch Templates"}
                   </s-button>
                 </s-stack>
 
@@ -368,9 +370,9 @@ export default function Index() {
               className="save-button"
               type="button"
               onClick={() => submitSettings(formRef.current)}
-              disabled={fetcher.state !== "idle"}
+              disabled={isSaving}
             >
-              {fetcher.state !== "idle" ? "Saving..." : "Save Settings to Firebase"}
+              {isSaving ? "Saving..." : "Save Settings to Firebase"}
             </button>
           </s-stack>
         </form>
