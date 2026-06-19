@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useFetcher, useLoaderData } from "react-router";
+import { useFetcher, useLoaderData, redirect } from "react-router";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
@@ -37,7 +37,7 @@ export const action = async ({ request }) => {
 
     try {
       await saveFlowbeeSettings(session.shop, data);
-      return { success: true, settings: data, intent: "save" };
+      return redirect("/app");
     } catch (error) {
       return { success: false, error: error.message, intent: "save" };
     }
@@ -66,7 +66,7 @@ function splitPhone(phone = "") {
   return { country: "91", number: phone };
 }
 
-export default function Index() {
+export default function Settings() {
   const { settings: initialSettings } = useLoaderData();
   const fetcher = useFetcher();
   const shopify = useAppBridge();
@@ -79,9 +79,7 @@ export default function Index() {
   useEffect(() => {
     if (fetcher.data) {
       if (fetcher.data.success) {
-        if (fetcher.data.intent === "save") {
-          shopify.toast.show("Saved to Firebase!");
-        } else if (fetcher.data.intent === "fetchTemplates") {
+        if (fetcher.data.intent === "fetchTemplates") {
           setTemplateList(fetcher.data.templates || []);
           shopify.toast.show("Templates loaded");
         }
@@ -120,7 +118,6 @@ export default function Index() {
       data[name] = field.value || "";
     });
 
-    // Combine phones
     const registeredPhone = (data["flowbeeRegisteredPhone_country"] || "") + (data["flowbeeRegisteredPhone_number"] || "");
     const notifyPhone = (data["flowbeeNotifyPhone_country"] || "") + (data["flowbeeNotifyPhone_number"] || "");
 
@@ -151,7 +148,6 @@ export default function Index() {
   const isFetching = fetcher.state !== "idle" && fetcher.formData?.get("intent") === "fetchTemplates";
   const regPhone = splitPhone(settings?.flowbeeRegisteredPhone);
   const notifyPhone = splitPhone(settings?.flowbeeNotifyPhone);
-  const isLocked = !!settings?.flowbeeApiKey;
 
   return (
     <div className="flowbee-wrapper">
@@ -438,64 +434,6 @@ export default function Index() {
           height: 20px;
         }
 
-        .locked-banner {
-          background: #fdfaff;
-          border: 1px solid #d8b4fe;
-          border-radius: 16px;
-          padding: 16px 20px;
-          margin-bottom: 28px;
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          box-shadow: 0 4px 12px rgba(124, 58, 237, 0.05);
-          box-sizing: border-box;
-          width: 100%;
-        }
-
-        .locked-banner svg {
-          flex-shrink: 0;
-        }
-
-        .locked-banner .banner-content {
-          flex-grow: 1;
-          text-align: left;
-        }
-
-        .locked-banner strong {
-          color: #4c1d95;
-          font-size: 14px;
-          display: block;
-          margin-bottom: 4px;
-          font-weight: 700;
-        }
-
-        .locked-banner p {
-          color: #6b7280;
-          font-size: 13px;
-          margin: 0;
-          line-height: 1.4;
-        }
-
-        .update-link-btn {
-          background: #7c3aed;
-          color: #ffffff !important;
-          text-decoration: none;
-          padding: 8px 16px;
-          border-radius: 10px;
-          font-size: 13px;
-          font-weight: 600;
-          transition: all 0.2s;
-          white-space: nowrap;
-          display: inline-block;
-          box-shadow: 0 4px 10px rgba(124, 58, 237, 0.15);
-        }
-
-        .update-link-btn:hover {
-          background: #6d28d9;
-          transform: translateY(-1px);
-          box-shadow: 0 6px 14px rgba(124, 58, 237, 0.2);
-        }
-
         @keyframes spin {
           to { transform: rotate(360deg); }
         }
@@ -504,8 +442,8 @@ export default function Index() {
       <div className="flowbee-card">
         <div className="flowbee-header">
           <img src="https://app.flowbee.io/svg/brand-logos/logo-flowbee-secondary.svg" alt="Flowbee Logo" />
-          <h1>App Configuration</h1>
-          <p>Configure templates and automatic customer notifications</p>
+          <h1>Update Configurations</h1>
+          <p>Modify templates and automatic customer notifications</p>
         </div>
 
         <form
@@ -513,17 +451,6 @@ export default function Index() {
           onSubmit={handleSave}
           key={settings?.updatedAt ? "updated" : "empty"}
         >
-          {isLocked && (
-            <div className="locked-banner">
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-              <div className="banner-content">
-                <strong>Settings Locked</strong>
-                <p>Configurations are locked to prevent accidental updates. Click edit to make modifications.</p>
-              </div>
-              <a href="/app/settings" className="update-link-btn">Edit Settings</a>
-            </div>
-          )}
-
           {/* Section 1: Credentials */}
           <div className="settings-section">
             <div className="section-title">
@@ -541,13 +468,11 @@ export default function Index() {
                   defaultValue={settings?.flowbeeApiKey || ""}
                   placeholder="Enter API Key"
                   required
-                  disabled={isLocked}
                 />
                 <button
                   type="button"
                   className="api-key-toggle"
                   onClick={() => setShowApiKey(!showApiKey)}
-                  disabled={isLocked}
                 >
                   {showApiKey ? (
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
@@ -566,7 +491,6 @@ export default function Index() {
                 defaultValue={settings?.flowbeeCompany || ""}
                 placeholder="Enter Company Name"
                 required
-                disabled={isLocked}
               />
             </div>
           </div>
@@ -581,7 +505,7 @@ export default function Index() {
             <div className="field-group">
               <span className="field-label">Registered WhatsApp Number</span>
               <div className="phone-group">
-                <select name="flowbeeRegisteredPhone_country" className="country-select" defaultValue={regPhone.country} disabled={isLocked}>
+                <select name="flowbeeRegisteredPhone_country" className="country-select" defaultValue={regPhone.country}>
                   {COUNTRY_CODES.map(c => <option key={c.code} value={c.code}>+{c.code}</option>)}
                 </select>
                 <input
@@ -590,7 +514,6 @@ export default function Index() {
                   defaultValue={regPhone.number}
                   placeholder="WhatsApp number"
                   required
-                  disabled={isLocked}
                 />
               </div>
             </div>
@@ -598,7 +521,7 @@ export default function Index() {
             <div className="field-group">
               <span className="field-label">Notification Phone Number (Admin)</span>
               <div className="phone-group">
-                <select name="flowbeeNotifyPhone_country" className="country-select" defaultValue={notifyPhone.country} disabled={isLocked}>
+                <select name="flowbeeNotifyPhone_country" className="country-select" defaultValue={notifyPhone.country}>
                   {COUNTRY_CODES.map(c => <option key={c.code} value={c.code}>+{c.code}</option>)}
                 </select>
                 <input
@@ -607,7 +530,6 @@ export default function Index() {
                   defaultValue={notifyPhone.number}
                   placeholder="Admin phone number"
                   required
-                  disabled={isLocked}
                 />
               </div>
             </div>
@@ -620,7 +542,7 @@ export default function Index() {
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="9"></line><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="11" y2="17"></line></svg>
                 WhatsApp Templates
               </div>
-              <button type="button" className="fetch-button" onClick={handleFetch} disabled={isFetching || isLocked}>
+              <button type="button" className="fetch-button" onClick={handleFetch} disabled={isFetching}>
                 {isFetching ? <span className="spinner"></span> : null}
                 {isFetching ? "Loading..." : "Sync Templates"}
               </button>
@@ -632,7 +554,6 @@ export default function Index() {
                 className="modern-select"
                 name="flowbeeTemplateOrderCreated" 
                 defaultValue={settings?.flowbeeTemplateOrderCreated || settings?.flowbeeTemplateId || ""}
-                disabled={isLocked}
               >
                 <option value="">-- Select Template --</option>
                 {templateList.map((t) => (
@@ -654,7 +575,6 @@ export default function Index() {
                 className="modern-select"
                 name="flowbeeTemplateOrderPaid" 
                 defaultValue={settings?.flowbeeTemplateOrderPaid || ""}
-                disabled={isLocked}
               >
                 <option value="">-- Select Template --</option>
                 {templateList.map((t) => (
@@ -676,7 +596,6 @@ export default function Index() {
                 className="modern-select"
                 name="flowbeeTemplateOrderFulfilled" 
                 defaultValue={settings?.flowbeeTemplateOrderFulfilled || ""}
-                disabled={isLocked}
               >
                 <option value="">-- Select Template --</option>
                 {templateList.map((t) => (
@@ -698,7 +617,6 @@ export default function Index() {
                 className="modern-select"
                 name="flowbeeTemplateOrderCancelled" 
                 defaultValue={settings?.flowbeeTemplateOrderCancelled || ""}
-                disabled={isLocked}
               >
                 <option value="">-- Select Template --</option>
                 {templateList.map((t) => (
@@ -728,7 +646,6 @@ export default function Index() {
                 className="modern-select"
                 name="flowbeeTemplateAbandonedCart" 
                 defaultValue={settings?.flowbeeTemplateAbandonedCart || ""}
-                disabled={isLocked}
               >
                 <option value="">-- Select Template --</option>
                 {templateList.map((t) => (
@@ -750,7 +667,6 @@ export default function Index() {
                 className="modern-select"
                 name="flowbeeAbandonedCartDelay" 
                 defaultValue={settings?.flowbeeAbandonedCartDelay || "1800"}
-                disabled={isLocked}
               >
                 <option value="30">30 seconds (Testing)</option>
                 <option value="900">15 minutes</option>
@@ -766,7 +682,6 @@ export default function Index() {
                 className="modern-select"
                 name="flowbeeAbandonedCartCount" 
                 defaultValue={settings?.flowbeeAbandonedCartCount || "1"}
-                disabled={isLocked}
               >
                 <option value="1">Send 1 recovery message</option>
                 <option value="2">Send 2 recovery messages</option>
@@ -780,7 +695,6 @@ export default function Index() {
                 className="modern-select"
                 name="flowbeeAbandonedCartInterval" 
                 defaultValue={settings?.flowbeeAbandonedCartInterval || "86400"}
-                disabled={isLocked}
               >
                 <option value="30">30 seconds (Testing)</option>
                 <option value="3600">1 hour</option>
@@ -791,15 +705,13 @@ export default function Index() {
             </div>
           </div>
 
-          {!isLocked && (
-            <button
-              className="save-button"
-              type="submit"
-              disabled={isSaving}
-            >
-              {isSaving ? <span className="spinner spinner-white"></span> : "Save Configurations"}
-            </button>
-          )}
+          <button
+            className="save-button"
+            type="submit"
+            disabled={isSaving}
+          >
+            {isSaving ? <span className="spinner spinner-white"></span> : "Save Configurations"}
+          </button>
         </form>
       </div>
     </div>
