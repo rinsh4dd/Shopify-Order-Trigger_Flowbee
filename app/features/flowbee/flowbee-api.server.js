@@ -37,6 +37,24 @@ function buildTemplatePayload({
     throw new Error("bodyValues must be an array");
   }
 
+  const defaultNames = TEMPLATE_PARAMETER_NAMES.default;
+
+  // Map default parameter names to values by index
+  const valueMap = {};
+  defaultNames.forEach((name, index) => {
+    valueMap[name] = bodyValues[index] !== undefined ? bodyValues[index] : "";
+  });
+
+  // Generate parameter objects matching the active template parameter names
+  const parameters = parameterNames.map((name, index) => {
+    const value = valueMap[name] !== undefined ? valueMap[name] : (bodyValues[index] !== undefined ? bodyValues[index] : "");
+    return {
+      type: "TEXT",
+      name: name,
+      value: String(value),
+    };
+  });
+
   return {
     company: settings.flowbeeCompany || FLOWBEE_COMPANY_FALLBACK,
     phoneno: registeredPhone,
@@ -44,11 +62,7 @@ function buildTemplatePayload({
     section: [
       {
         section: "BODY",
-        parameter: bodyValues.map((value, index) => ({
-          type: "TEXT",
-          name: parameterNames[index] || `param_${index + 1}`,
-          value: String(value),
-        })),
+        parameter: parameters,
       },
     ],
     to: [{ number: targetRecipient }],

@@ -14,4 +14,9 @@ export const TEMPLATE_PARAMETER_NAMES = {
     "total",
     "status",
   ],
+  "1556930419135772": [
+    "customer_name",
+    "product",
+    "status",
+  ],
 };

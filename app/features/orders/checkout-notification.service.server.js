@@ -66,7 +66,7 @@ export async function processCheckoutWebhook({ shop, payload, topic }) {
   });
 
   // 2. Schedule the notification (e.g. after 30 minutes)
-  const delayMs = 10 * 1000; // 10 seconds for testing
+  const delayMs = 30 * 1000; // 30 seconds for testing
 
   setTimeout(async () => {
     try {
@@ -86,19 +86,22 @@ export async function processCheckoutWebhook({ shop, payload, topic }) {
           return;
         }
 
+        const templateId = settings.flowbeeTemplateAbandonedCart;
+        const bodyValues = [
+          freshCheckout.customerName,
+          String(freshCheckout.checkoutId),
+          freshCheckout.products,
+          String(freshCheckout.quantity),
+          freshCheckout.totalPrice,
+          freshCheckout.checkoutUrl,
+        ];
+
         // Send to customer phone!
         await sendFlowbeeTemplateMessage({
           settings,
           recipientPhone: freshCheckout.phone,
-          bodyValues: [
-            freshCheckout.customerName,
-            String(freshCheckout.checkoutId),
-            freshCheckout.products,
-            String(freshCheckout.quantity),
-            freshCheckout.totalPrice,
-            freshCheckout.checkoutUrl,
-          ],
-          templateId: settings.flowbeeTemplateAbandonedCart,
+          bodyValues,
+          templateId,
         });
 
         // Mark as notified
