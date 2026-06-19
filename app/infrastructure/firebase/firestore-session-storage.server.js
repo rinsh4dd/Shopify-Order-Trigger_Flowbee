@@ -51,8 +51,9 @@ export class FirestoreSessionStorage {
         return undefined;
       }
 
-      const { _updatedAt, ...sessionData } = snapshot.data();
-      return Session.fromPropertyArray(Object.entries(sessionData));
+      const data = snapshot.data();
+      const sessionData = Object.entries(data).filter(([key]) => key !== "_updatedAt");
+      return Session.fromPropertyArray(sessionData);
     } catch (error) {
       console.error("[FIRESTORE SESSION] loadSession error:", error.message);
       return undefined;
@@ -91,8 +92,9 @@ export class FirestoreSessionStorage {
       const querySnapshot = await getDocs(q);
 
       return querySnapshot.docs.map((docSnap) => {
-        const { _updatedAt, ...sessionData } = docSnap.data();
-        return Session.fromPropertyArray(Object.entries(sessionData));
+        const data = docSnap.data();
+        const sessionData = Object.entries(data).filter(([key]) => key !== "_updatedAt");
+        return Session.fromPropertyArray(sessionData);
       });
     } catch (error) {
       console.error("[FIRESTORE SESSION] findSessionsByShop error:", error.message);

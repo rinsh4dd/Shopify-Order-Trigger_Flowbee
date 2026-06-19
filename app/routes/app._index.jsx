@@ -1,6 +1,4 @@
-import { useEffect, useRef, useState } from "react";
-import { useFetcher, useLoaderData, Link } from "react-router";
-import { useAppBridge } from "@shopify/app-bridge-react";
+import { useLoaderData, Link } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
 import {
@@ -15,7 +13,7 @@ export const loader = async ({ request }) => {
 };
 
 export const action = async ({ request }) => {
-  const { session } = await authenticate.admin(request);
+  await authenticate.admin(request);
   const formData = await request.formData();
   const intent = formData.get("intent");
 
@@ -67,8 +65,6 @@ function formatDelay(seconds) {
 
 export default function Index() {
   const { settings, shop } = useLoaderData();
-  const fetcher = useFetcher();
-  const shopify = useAppBridge();
 
   const isConnected = !!settings?.flowbeeApiKey;
   const activeTemplateOrderCreated = settings?.flowbeeTemplateOrderCreated || settings?.flowbeeTemplateId;
