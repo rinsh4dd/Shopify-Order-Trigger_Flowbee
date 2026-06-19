@@ -78,7 +78,6 @@ function formatPhone(phone = "") {
 function formatDelay(seconds) {
   if (!seconds) return "30 minutes";
   const secs = parseInt(seconds, 10);
-  if (secs === 30) return "30 seconds (Testing)";
   if (secs >= 3600) {
     const hours = secs / 3600;
     return `${hours} hour${hours > 1 ? "s" : ""}`;
@@ -1034,7 +1033,6 @@ export default function Settings() {
                     name="flowbeeAbandonedCartDelay" 
                     defaultValue={settings?.flowbeeAbandonedCartDelay || "1800"}
                   >
-                    <option value="30">30 seconds (Testing)</option>
                     <option value="900">15 minutes</option>
                     <option value="1800">30 minutes</option>
                     <option value="3600">1 hour</option>
@@ -1042,33 +1040,8 @@ export default function Settings() {
                   </select>
                 </div>
 
-                <div className="field-group">
-                  <span className="field-label">Recovery Attempt Limits</span>
-                  <select 
-                    className="modern-select"
-                    name="flowbeeAbandonedCartCount" 
-                    defaultValue={settings?.flowbeeAbandonedCartCount || "1"}
-                  >
-                    <option value="1">Send 1 recovery message</option>
-                    <option value="2">Send 2 recovery messages</option>
-                    <option value="3">Send 3 recovery messages</option>
-                  </select>
-                </div>
-
-                <div className="field-group">
-                  <span className="field-label">Interval Between Recovery Messages</span>
-                  <select 
-                    className="modern-select"
-                    name="flowbeeAbandonedCartInterval" 
-                    defaultValue={settings?.flowbeeAbandonedCartInterval || "86400"}
-                  >
-                    <option value="30">30 seconds (Testing)</option>
-                    <option value="3600">1 hour</option>
-                    <option value="7200">2 hours</option>
-                    <option value="43200">12 hours</option>
-                    <option value="86400">24 hours</option>
-                  </select>
-                </div>
+                <input type="hidden" name="flowbeeAbandonedCartCount" value="1" />
+                <input type="hidden" name="flowbeeAbandonedCartInterval" value="86400" />
               </div>
             </div>
 
