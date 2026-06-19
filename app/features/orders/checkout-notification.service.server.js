@@ -24,7 +24,13 @@ export async function processCheckoutWebhook({ shop, payload, topic, admin }) {
     return;
   }
 
-  let phone = payload.phone || payload.customer?.phone || payload.shipping_address?.phone || payload.billing_address?.phone;
+  let rawPhone = payload.phone || payload.customer?.phone || payload.shipping_address?.phone || payload.billing_address?.phone || payload.sms_marketing_phone;
+  
+  if (rawPhone && typeof rawPhone === "object") {
+    rawPhone = rawPhone.phone;
+  }
+
+  let phone = rawPhone;
 
   // Fallback: If no phone in payload, but customer ID exists, query customer profile via GraphQL Admin API
   if (!phone && payload.customer?.id && admin) {
