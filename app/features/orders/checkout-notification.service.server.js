@@ -26,22 +26,36 @@ export async function processCheckoutWebhook({ shop, payload, topic, admin }) {
 
   let phone = payload.phone || payload.customer?.phone || payload.shipping_address?.phone || payload.billing_address?.phone;
 
-  // Fallback: If no phone in payload, but customer ID exists, query customer profile via Admin API
+  // Fallback: If no phone in payload, but customer ID exists, query customer profile via GraphQL Admin API
   if (!phone && payload.customer?.id && admin) {
     try {
-      console.log(`[WEBHOOK] Phone missing in payload for checkout ${checkoutId}. Querying Shopify Admin API for Customer ID: ${payload.customer.id}`);
-      const customer = await admin.rest.resources.Customer.find({
-        session: admin.session,
-        id: payload.customer.id,
-      });
-      if (customer && customer.phone) {
-        phone = customer.phone;
-        console.log(`[WEBHOOK] Successfully retrieved customer phone from profile REST API: ${phone}`);
+      const gqlId = `gid://shopify/Customer/${payload.customer.id}`;
+      console.log(`[WEBHOOK] Phone missing in payload for checkout ${checkoutId}. Querying Shopify GraphQL for Customer: ${gqlId}`);
+      
+      const response = await admin.graphql(
+        `query getCustomerPhone($id: ID!) {
+          customer(id: $id) {
+            phone
+          }
+        }`,
+        {
+          variables: {
+            id: gqlId
+          }
+        }
+      );
+      
+      const resJson = await response.json();
+      const customerPhone = resJson?.data?.customer?.phone;
+      
+      if (customerPhone) {
+        phone = customerPhone;
+        console.log(`[WEBHOOK] Successfully retrieved customer phone from profile GraphQL API: ${phone}`);
       } else {
-        console.log(`[WEBHOOK] Customer profile REST API query returned no phone number for ID: ${payload.customer.id}`);
+        console.log(`[WEBHOOK] Customer profile GraphQL API query returned no phone number for ID: ${gqlId}`);
       }
     } catch (err) {
-      console.error(`[WEBHOOK] Failed to fetch customer profile phone via Admin API:`, err.message);
+      console.error(`[WEBHOOK] Failed to fetch customer profile phone via GraphQL Admin API:`, err.message);
     }
   }
 
