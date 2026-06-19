@@ -135,6 +135,9 @@ export default function Index() {
     formData.append("flowbeeTemplateOrderFulfilled", data["flowbeeTemplateOrderFulfilled"] || "");
     formData.append("flowbeeTemplateOrderCancelled", data["flowbeeTemplateOrderCancelled"] || "");
     formData.append("flowbeeTemplateAbandonedCart", data["flowbeeTemplateAbandonedCart"] || "");
+    formData.append("flowbeeAbandonedCartDelay", data["flowbeeAbandonedCartDelay"] || "1800");
+    formData.append("flowbeeAbandonedCartCount", data["flowbeeAbandonedCartCount"] || "1");
+    formData.append("flowbeeAbandonedCartInterval", data["flowbeeAbandonedCartInterval"] || "86400");
 
     fetcher.submit(formData, { method: "post" });
   };
@@ -489,6 +492,74 @@ export default function Index() {
                         Saved: {settings.flowbeeTemplateAbandonedCart}
                       </option>
                     )}
+                  </select>
+                </div>
+
+                {/* 6. Abandoned Cart Delay Settings */}
+                <div>
+                  <span className="field-label">Abandoned Cart Delay</span>
+                  <select 
+                    name="flowbeeAbandonedCartDelay" 
+                    defaultValue={settings?.flowbeeAbandonedCartDelay || "1800"} 
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      borderRadius: '8px',
+                      border: '1px solid #c9cccf',
+                      background: 'white',
+                      fontSize: '14px',
+                      height: '40px'
+                    }}
+                  >
+                    <option value="30">30 seconds (Testing)</option>
+                    <option value="900">15 minutes</option>
+                    <option value="1800">30 minutes</option>
+                    <option value="3600">1 hour</option>
+                    <option value="7200">2 hours</option>
+                  </select>
+                </div>
+
+                <div>
+                  <span className="field-label">Recovery Message Attempts Count</span>
+                  <select 
+                    name="flowbeeAbandonedCartCount" 
+                    defaultValue={settings?.flowbeeAbandonedCartCount || "1"} 
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      borderRadius: '8px',
+                      border: '1px solid #c9cccf',
+                      background: 'white',
+                      fontSize: '14px',
+                      height: '40px'
+                    }}
+                  >
+                    <option value="1">1 time</option>
+                    <option value="2">2 times</option>
+                    <option value="3">3 times</option>
+                  </select>
+                </div>
+
+                <div>
+                  <span className="field-label">Interval Between Recovery Messages</span>
+                  <select 
+                    name="flowbeeAbandonedCartInterval" 
+                    defaultValue={settings?.flowbeeAbandonedCartInterval || "86400"} 
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      borderRadius: '8px',
+                      border: '1px solid #c9cccf',
+                      background: 'white',
+                      fontSize: '14px',
+                      height: '40px'
+                    }}
+                  >
+                    <option value="30">30 seconds (Testing)</option>
+                    <option value="3600">1 hour</option>
+                    <option value="7200">2 hours</option>
+                    <option value="43200">12 hours</option>
+                    <option value="86400">24 hours</option>
                   </select>
                 </div>
               </s-stack>

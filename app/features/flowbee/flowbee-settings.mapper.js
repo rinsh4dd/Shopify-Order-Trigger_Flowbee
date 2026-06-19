@@ -11,5 +11,8 @@ export function buildFlowbeeSettingsInput({ shop, formData }) {
     flowbeeTemplateOrderFulfilled: formData.get("flowbeeTemplateOrderFulfilled") || "",
     flowbeeTemplateOrderCancelled: formData.get("flowbeeTemplateOrderCancelled") || "",
     flowbeeTemplateAbandonedCart: formData.get("flowbeeTemplateAbandonedCart") || "",
+    flowbeeAbandonedCartDelay: formData.get("flowbeeAbandonedCartDelay") || "1800",
+    flowbeeAbandonedCartCount: formData.get("flowbeeAbandonedCartCount") || "1",
+    flowbeeAbandonedCartInterval: formData.get("flowbeeAbandonedCartInterval") || "86400",
   };
 }

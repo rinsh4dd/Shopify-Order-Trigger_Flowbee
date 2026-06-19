@@ -52,6 +52,10 @@ export async function processCheckoutWebhook({ shop, payload, topic }) {
     return;
   }
 
+  const settings = await getFlowbeeSettings(shop);
+  const delaySeconds = parseInt(settings?.flowbeeAbandonedCartDelay || "1800", 10);
+  const recoveryChainId = Date.now().toString();
+
   await saveCheckoutRecord(checkoutId, {
     checkoutId,
     shop,
@@ -62,56 +66,91 @@ export async function processCheckoutWebhook({ shop, payload, topic }) {
     quantity,
     totalPrice,
     completed: false,
-    notified: false,
+    attemptsSent: 0,
+    recoveryChainId,
   });
 
-  // 2. Schedule the notification (e.g. after 30 minutes)
-  const delayMs = 30 * 1000; // 30 seconds for testing
+  // 2. Schedule the notification
+  const delayMs = delaySeconds * 1000;
+  console.log(
+    `[WEBHOOK] Scheduled recovery chain ${recoveryChainId} for checkout ${checkoutId} in ${delaySeconds}s.`
+  );
 
-  setTimeout(async () => {
-    try {
-      const freshCheckout = await getCheckoutRecord(checkoutId);
-      if (!freshCheckout) return;
-
-      if (!freshCheckout.completed && !freshCheckout.notified) {
-        console.log(
-          `[ABANDONED CHECKOUT] Checkout ${checkoutId} remains uncompleted. Sending WhatsApp recovery...`,
-        );
-
-        const settings = await getFlowbeeSettings(shop);
-        if (!settings || !settings.flowbeeTemplateAbandonedCart) {
-          console.log(
-            `[ABANDONED CHECKOUT] No abandoned cart template configured for ${shop}. Skipping.`,
-          );
-          return;
-        }
-
-        const templateId = settings.flowbeeTemplateAbandonedCart;
-        const bodyValues = [
-          freshCheckout.customerName,
-          String(freshCheckout.checkoutId),
-          freshCheckout.products,
-          String(freshCheckout.quantity),
-          freshCheckout.totalPrice,
-          freshCheckout.checkoutUrl,
-        ];
-
-        // Send to customer phone!
-        await sendFlowbeeTemplateMessage({
-          settings,
-          recipientPhone: freshCheckout.phone,
-          bodyValues,
-          templateId,
-        });
-
-        // Mark as notified
-        await saveCheckoutRecord(checkoutId, { notified: true });
-      }
-    } catch (err) {
-      console.error(
-        `[ABANDONED CHECKOUT] Failed to run scheduled checkout task for ${checkoutId}:`,
-        err.message,
-      );
-    }
+  setTimeout(() => {
+    executeRecovery(checkoutId, shop, recoveryChainId);
   }, delayMs);
+}
+
+async function executeRecovery(checkoutId, shop, recoveryChainId) {
+  try {
+    const freshCheckout = await getCheckoutRecord(checkoutId);
+    if (!freshCheckout) return;
+
+    // Check if completed, or if this timeout was superseded by a newer one
+    if (freshCheckout.completed) {
+      console.log(`[ABANDONED CHECKOUT] Checkout ${checkoutId} is completed. Stopping recovery.`);
+      return;
+    }
+    if (freshCheckout.recoveryChainId !== recoveryChainId) {
+      console.log(`[ABANDONED CHECKOUT] Timeout chain for checkout ${checkoutId} is superseded. Exiting.`);
+      return;
+    }
+
+    const settings = await getFlowbeeSettings(shop);
+    if (!settings || !settings.flowbeeTemplateAbandonedCart) {
+      console.log(`[ABANDONED CHECKOUT] No template configured for ${shop}. Skipping.`);
+      return;
+    }
+
+    const maxAttempts = parseInt(settings.flowbeeAbandonedCartCount || "1", 10);
+    const intervalSeconds = parseInt(settings.flowbeeAbandonedCartInterval || "86400", 10);
+    const currentAttempts = freshCheckout.attemptsSent || 0;
+
+    if (currentAttempts >= maxAttempts) {
+      console.log(`[ABANDONED CHECKOUT] Max attempts (${maxAttempts}) reached for checkout ${checkoutId}.`);
+      return;
+    }
+
+    console.log(
+      `[ABANDONED CHECKOUT] Sending recovery message (Attempt ${currentAttempts + 1}/${maxAttempts}) for checkout ${checkoutId}...`
+    );
+
+    const templateId = settings.flowbeeTemplateAbandonedCart;
+    const bodyValues = [
+      freshCheckout.customerName,
+      String(freshCheckout.checkoutId),
+      freshCheckout.products,
+      String(freshCheckout.quantity),
+      freshCheckout.totalPrice,
+      freshCheckout.checkoutUrl,
+    ];
+
+    // Send to customer phone!
+    await sendFlowbeeTemplateMessage({
+      settings,
+      recipientPhone: freshCheckout.phone,
+      bodyValues,
+      templateId,
+    });
+
+    const newAttempts = currentAttempts + 1;
+    // Mark as notified and update attemptsSent
+    await saveCheckoutRecord(checkoutId, {
+      attemptsSent: newAttempts,
+      notified: true,
+    });
+
+    if (newAttempts < maxAttempts) {
+      const intervalMs = intervalSeconds * 1000;
+      console.log(`[ABANDONED CHECKOUT] Scheduling next recovery attempt for ${checkoutId} in ${intervalSeconds}s.`);
+      setTimeout(() => {
+        executeRecovery(checkoutId, shop, recoveryChainId);
+      }, intervalMs);
+    }
+  } catch (err) {
+    console.error(
+      `[ABANDONED CHECKOUT] Failed to run scheduled checkout task for ${checkoutId}:`,
+      err.message,
+    );
+  }
 }
