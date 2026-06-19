@@ -26,8 +26,10 @@ export async function processOrderWebhook({ shop, topic, payload, webhookId }) {
     processedWebhooks.add(webhookId);
   }
 
+  const normalizedTopic = (topic || "").toUpperCase().replace("/", "_");
+
   // Prevent double messaging: if an order is created and already paid, orders/paid will handle it.
-  if (topic === "orders/create" && payload.financial_status === "paid") {
+  if (normalizedTopic === "ORDERS_CREATE" && payload.financial_status === "paid") {
     console.log(`[WEBHOOK] Order ${payload.name} is already paid. Skipping orders/create notification.`);
     return { ok: true, skipped: "already_paid" };
   }
@@ -68,7 +70,7 @@ export async function processOrderWebhook({ shop, topic, payload, webhookId }) {
   const qtyVal = String(orderDetails.totalQuantity || 0);
   const totalVal = orderDetails.totalAmount || "0.00";
 
-  if (topic === "orders/create") {
+  if (normalizedTopic === "ORDERS_CREATE") {
     templateId = settings.flowbeeTemplateOrderCreated || settings.flowbeeTemplateId;
     bodyValues = [
       customerNameVal,
@@ -78,7 +80,7 @@ export async function processOrderWebhook({ shop, topic, payload, webhookId }) {
       totalVal,
       "Created"
     ];
-  } else if (topic === "orders/paid") {
+  } else if (normalizedTopic === "ORDERS_PAID") {
     templateId = settings.flowbeeTemplateOrderPaid;
     bodyValues = [
       customerNameVal,
@@ -88,7 +90,7 @@ export async function processOrderWebhook({ shop, topic, payload, webhookId }) {
       totalVal,
       "Paid"
     ];
-  } else if (topic === "orders/fulfilled") {
+  } else if (normalizedTopic === "ORDERS_FULFILLED") {
     templateId = settings.flowbeeTemplateOrderFulfilled;
     bodyValues = [
       customerNameVal,
@@ -98,7 +100,7 @@ export async function processOrderWebhook({ shop, topic, payload, webhookId }) {
       totalVal,
       "Fulfilled"
     ];
-  } else if (topic === "orders/cancelled") {
+  } else if (normalizedTopic === "ORDERS_CANCELLED") {
     templateId = settings.flowbeeTemplateOrderCancelled;
     bodyValues = [
       customerNameVal,
