@@ -9,27 +9,13 @@ import {
 } from "../features/flowbee/flowbee-settings.service.server";
 
 export const loader = async ({ request }) => {
-  let shop = "";
-  try {
-    const { session } = await authenticate.admin(request);
-    shop = session.shop;
-  } catch (error) {
-    const url = new URL(request.url);
-    shop = url.searchParams.get("shop") || "flowbee-dev.myshopify.com";
-  }
-  const settings = await getFlowbeeSettings(shop);
-  return { settings, shop };
+  const { session } = await authenticate.admin(request);
+  const settings = await getFlowbeeSettings(session.shop);
+  return { settings, shop: session.shop };
 };
 
 export const action = async ({ request }) => {
-  let shop = "";
-  try {
-    const { session } = await authenticate.admin(request);
-    shop = session.shop;
-  } catch (error) {
-    const url = new URL(request.url);
-    shop = url.searchParams.get("shop") || "flowbee-dev.myshopify.com";
-  }
+  const { session } = await authenticate.admin(request);
   const formData = await request.formData();
   const intent = formData.get("intent");
 
@@ -534,6 +520,35 @@ export default function Index() {
           color: #a0aec0;
           font-size: 11px;
         }
+
+        /* Footer styling */
+        .dashboard-footer {
+          margin-top: 50px;
+          border-top: 1px solid #e1e3e5;
+          padding-top: 20px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-size: 13px;
+          color: #6d7175;
+        }
+
+        .dashboard-footer a {
+          color: #7c3aed;
+          text-decoration: none;
+          font-weight: 500;
+          transition: color 0.2s;
+        }
+
+        .dashboard-footer a:hover {
+          color: #6d28d9;
+        }
+
+        .footer-links {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
       `}</style>
 
       {/* Top Header */}
@@ -564,7 +579,7 @@ export default function Index() {
             <p>These are the settings currently live in your Shopify store database. Click Edit below to modify API credentials, numbers, or templates.</p>
           </div>
         </div>
-        <Link to={`/app/settings?shop=${shop}`} className="update-link-btn">
+        <Link to="/app/settings" className="update-link-btn">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="16 3 21 8 8 21 3 21 3 16 16 3"></polygon></svg>
           Edit Configurations
         </Link>
@@ -784,6 +799,18 @@ export default function Index() {
           </div>
         </div>
       </div>
+
+      {/* Unified Footer */}
+      <footer className="dashboard-footer">
+        <p>&copy; {new Date().getFullYear()} Flowbee.io. All rights reserved.</p>
+        <div className="footer-links">
+          <a href="https://flowbee.io" target="_blank" rel="noopener noreferrer">Website</a>
+          <span>&bull;</span>
+          <a href="mailto:support@flowbee.io">Support</a>
+          <span>&bull;</span>
+          <a href="https://flowbee.io/docs" target="_blank" rel="noopener noreferrer">Documentation</a>
+        </div>
+      </footer>
     </div>
   );
 }

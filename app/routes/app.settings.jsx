@@ -11,27 +11,13 @@ import {
 } from "../features/flowbee/flowbee-settings.service.server";
 
 export const loader = async ({ request }) => {
-  let shop = "";
-  try {
-    const { session } = await authenticate.admin(request);
-    shop = session.shop;
-  } catch (error) {
-    const url = new URL(request.url);
-    shop = url.searchParams.get("shop") || "flowbee-dev.myshopify.com";
-  }
-  const settings = await getFlowbeeSettings(shop);
-  return { settings, shop };
+  const { session } = await authenticate.admin(request);
+  const settings = await getFlowbeeSettings(session.shop);
+  return { settings, shop: session.shop };
 };
 
 export const action = async ({ request }) => {
-  let shop = "";
-  try {
-    const { session } = await authenticate.admin(request);
-    shop = session.shop;
-  } catch (error) {
-    const url = new URL(request.url);
-    shop = url.searchParams.get("shop") || "flowbee-dev.myshopify.com";
-  }
+  const { session } = await authenticate.admin(request);
   const formData = await request.formData();
   const intent = formData.get("intent");
 
@@ -47,11 +33,11 @@ export const action = async ({ request }) => {
   }
 
   if (intent === "save") {
-    const data = createFlowbeeSettingsInput({ shop, formData });
+    const data = createFlowbeeSettingsInput({ shop: session.shop, formData });
 
     try {
-      await saveFlowbeeSettings(shop, data);
-      return redirect(`/app?shop=${shop}`);
+      await saveFlowbeeSettings(session.shop, data);
+      return redirect("/app");
     } catch (error) {
       return { success: false, error: error.message, intent: "save" };
     }
@@ -80,6 +66,26 @@ function splitPhone(phone = "") {
   return { country: "91", number: phone };
 }
 
+function formatPhone(phone = "") {
+  if (!phone) return "Not configured";
+  const match = COUNTRY_CODES.find(c => phone.startsWith(c.code));
+  if (match) {
+    return `+${match.code} ${phone.slice(match.code.length)}`;
+  }
+  return `+${phone}`;
+}
+
+function formatDelay(seconds) {
+  if (!seconds) return "30 minutes";
+  const secs = parseInt(seconds, 10);
+  if (secs === 30) return "30 seconds (Testing)";
+  if (secs >= 3600) {
+    const hours = secs / 3600;
+    return `${hours} hour${hours > 1 ? "s" : ""}`;
+  }
+  return `${secs / 60} minutes`;
+}
+
 export default function Settings() {
   const { settings: initialSettings, shop } = useLoaderData();
   const fetcher = useFetcher();
@@ -89,6 +95,8 @@ export default function Settings() {
   const [showApiKey, setShowApiKey] = useState(false);
   const formRef = useRef(null);
   const settings = fetcher.data?.settings || initialSettings;
+
+  const isConnected = !!settings?.flowbeeApiKey;
 
   useEffect(() => {
     if (fetcher.data) {
@@ -164,87 +172,214 @@ export default function Settings() {
   const notifyPhone = splitPhone(settings?.flowbeeNotifyPhone);
 
   return (
-    <div className="flowbee-wrapper">
+    <div className="dashboard-container">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
         
-        .flowbee-wrapper {
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        .dashboard-container {
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
           background: #f6f8fa;
           min-height: 100vh;
-          padding: 60px 20px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          padding: 30px 40px;
+          color: #202223;
           box-sizing: border-box;
         }
 
-        .flowbee-card {
-          background: rgba(255, 255, 255, 0.95);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.6);
-          border-radius: 28px;
-          box-shadow: 
-            0 30px 60px rgba(124, 58, 237, 0.08), 
-            0 0 100px rgba(124, 58, 237, 0.04),
-            inset 0 1px 0 rgba(255, 255, 255, 0.8);
-          padding: 48px;
-          max-width: 600px;
-          width: 100%;
-          box-sizing: border-box;
-          transition: all 0.3s ease;
-        }
-
-        .flowbee-header {
+        .dashboard-header {
           display: flex;
-          flex-direction: column;
+          justify-content: space-between;
           align-items: center;
-          text-align: center;
-          margin-bottom: 40px;
+          margin-bottom: 30px;
+          border-bottom: 1px solid #e1e3e5;
+          padding-bottom: 20px;
         }
 
-        .flowbee-header img {
-          height: 44px;
-          margin-bottom: 16px;
+        .header-left {
+          display: flex;
+          align-items: center;
+          gap: 16px;
         }
 
-        .flowbee-header h1 {
-          font-size: 24px;
-          font-weight: 700;
+        .logo-img {
+          height: 38px;
+        }
+
+        .header-title-group h1 {
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-size: 22px;
+          font-weight: 800;
           color: #1e1b4b;
-          margin: 0 0 8px 0;
-          letter-spacing: -0.5px;
-        }
-
-        .flowbee-header p {
-          font-size: 14px;
-          color: #6b7280;
           margin: 0;
         }
 
-        .settings-section {
-          background: rgba(255, 255, 255, 0.6);
-          border: 1px solid #f3e8ff;
-          border-radius: 20px;
-          padding: 24px;
-          margin-bottom: 24px;
-          box-shadow: 0 4px 6px rgba(124, 58, 237, 0.02);
+        .header-title-group p {
+          font-size: 13px;
+          color: #6d7175;
+          margin: 4px 0 0 0;
         }
 
-        .section-title {
-          font-size: 15px;
-          font-weight: 700;
-          color: #4c1d95;
-          margin-bottom: 18px;
+        .header-right {
           display: flex;
           align-items: center;
+          gap: 12px;
+        }
+
+        .store-badge {
+          background: #e2e8f0;
+          color: #475569;
+          font-size: 13px;
+          font-weight: 600;
+          padding: 6px 12px;
+          border-radius: 9999px;
+          border: 1px solid #cbd5e1;
+        }
+
+        .status-badge {
+          display: inline-flex;
+          align-items: center;
           gap: 8px;
-          border-bottom: 1px dashed #edd9ff;
-          padding-bottom: 10px;
+          font-size: 13px;
+          font-weight: 600;
+          padding: 6px 14px;
+          border-radius: 9999px;
+        }
+
+        .status-badge.connected {
+          background: #d1fae5;
+          color: #065f46;
+          border: 1px solid #a7f3d0;
+        }
+
+        .status-badge.disconnected {
+          background: #fee2e2;
+          color: #991b1b;
+          border: 1px solid #fca5a5;
+        }
+
+        .status-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          display: inline-block;
+          animation: pulse 2s infinite;
+        }
+
+        .status-badge.connected .status-dot {
+          background-color: #10b981;
+        }
+
+        .status-badge.disconnected .status-dot {
+          background-color: #ef4444;
+        }
+
+        @keyframes pulse {
+          0% { transform: scale(0.9); opacity: 1; }
+          50% { transform: scale(1.2); opacity: 0.5; }
+          100% { transform: scale(0.9); opacity: 1; }
+        }
+
+        /* Metrics grid */
+        .metrics-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          gap: 20px;
+          margin-bottom: 30px;
+        }
+
+        .metric-card {
+          background: #ffffff;
+          border: 1px solid #e1e3e5;
+          border-radius: 16px;
+          padding: 24px;
+          display: flex;
+          align-items: center;
+          gap: 20px;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.01);
+          transition: all 0.2s;
+        }
+
+        .metric-icon-box {
+          background: #faf5ff;
+          color: #7c3aed;
+          width: 52px;
+          height: 52px;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .metric-details {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .metric-label {
+          font-size: 13px;
+          color: #6d7175;
+          font-weight: 500;
+        }
+
+        .metric-value {
+          font-size: 16px;
+          font-weight: 700;
+          color: #1c2434;
+          margin-top: 4px;
+        }
+
+        /* Two column layout */
+        .dashboard-content-layout {
+          display: grid;
+          grid-template-columns: 2fr 1fr;
+          gap: 30px;
+        }
+
+        @media (max-width: 1024px) {
+          .dashboard-content-layout {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        .dashboard-column {
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+        }
+
+        /* Modern Dashboard Card */
+        .dash-card {
+          background: #ffffff;
+          border: 1px solid #e1e3e5;
+          border-radius: 20px;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.01);
+          overflow: hidden;
+        }
+
+        .dash-card-header {
+          padding: 24px 28px;
+          border-bottom: 1px solid #f1f2f4;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .dash-card-title {
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-size: 16px;
+          font-weight: 700;
+          color: #1e1b4b;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin: 0;
+        }
+
+        .dash-card-body {
+          padding: 28px;
         }
 
         .field-group {
-          margin-bottom: 18px;
+          margin-bottom: 20px;
         }
 
         .field-group:last-child {
@@ -252,9 +387,9 @@ export default function Settings() {
         }
 
         .field-label {
-          font-size: 13px;
+          font-size: 13.5px;
           font-weight: 600;
-          color: #4b5563;
+          color: #374151;
           margin-bottom: 8px;
           display: block;
         }
@@ -263,11 +398,11 @@ export default function Settings() {
           width: 100%;
           padding: 12px 16px;
           border-radius: 12px;
-          border: 1px solid #e5e7eb;
+          border: 1px solid #cbd5e1;
           background: #ffffff;
           font-size: 14px;
           font-family: inherit;
-          color: #1f2937;
+          color: #1e293b;
           outline: none;
           box-sizing: border-box;
           transition: all 0.2s ease-in-out;
@@ -275,7 +410,6 @@ export default function Settings() {
 
         .modern-input:focus {
           border-color: #7c3aed;
-          background: #ffffff;
           box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12);
         }
 
@@ -294,7 +428,7 @@ export default function Settings() {
           background: none;
           border: none;
           cursor: pointer;
-          color: #9ca3af;
+          color: #94a3b8;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -316,12 +450,12 @@ export default function Settings() {
           width: 120px;
           padding: 12px;
           border-radius: 12px;
-          border: 1px solid #e5e7eb;
-          background: #f9fafb;
+          border: 1px solid #cbd5e1;
+          background: #f8fafc;
           font-size: 14px;
           font-family: inherit;
-          color: #1f2937;
-          height: 45px;
+          color: #1e293b;
+          height: 46px;
           outline: none;
           cursor: pointer;
           transition: all 0.2s;
@@ -329,7 +463,6 @@ export default function Settings() {
 
         .country-select:focus {
           border-color: #7c3aed;
-          background: #ffffff;
           box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12);
         }
 
@@ -337,12 +470,12 @@ export default function Settings() {
           width: 100%;
           padding: 12px 16px;
           border-radius: 12px;
-          border: 1px solid #e5e7eb;
+          border: 1px solid #cbd5e1;
           background: #ffffff;
           font-size: 14px;
           font-family: inherit;
-          color: #1f2937;
-          height: 45px;
+          color: #1e293b;
+          height: 46px;
           outline: none;
           cursor: pointer;
           box-sizing: border-box;
@@ -361,16 +494,9 @@ export default function Settings() {
           margin-bottom: 20px;
         }
 
-        .templates-header h3 {
-          font-size: 15px;
-          font-weight: 700;
-          color: #4c1d95;
-          margin: 0;
-        }
-
         .fetch-button {
           background: #ffffff;
-          border: 1px solid #d8b4fe;
+          border: 1px solid #cbd5e1;
           color: #7c3aed;
           border-radius: 10px;
           padding: 8px 16px;
@@ -398,34 +524,59 @@ export default function Settings() {
           transform: none;
         }
 
+        .button-group {
+          display: flex;
+          gap: 16px;
+          margin-top: 30px;
+          width: 100%;
+        }
+
+        .cancel-button {
+          background: #ffffff;
+          border: 1px solid #cbd5e1;
+          color: #475569;
+          border-radius: 14px;
+          padding: 14px 24px;
+          font-size: 15px;
+          font-weight: 700;
+          font-family: inherit;
+          text-decoration: none;
+          text-align: center;
+          display: block;
+          width: 100%;
+          box-sizing: border-box;
+          transition: all 0.2s;
+        }
+
+        .cancel-button:hover {
+          background: #f8fafc;
+          border-color: #94a3b8;
+          transform: translateY(-1px);
+        }
+
         .save-button {
           background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
           color: #ffffff;
           border: none;
-          border-radius: 16px;
-          padding: 16px 24px;
-          font-size: 16px;
+          border-radius: 14px;
+          padding: 14px 24px;
+          font-size: 15px;
           font-weight: 700;
           font-family: inherit;
           cursor: pointer;
           width: 100%;
-          margin-top: 12px;
-          box-shadow: 0 10px 20px rgba(124, 58, 237, 0.2);
+          box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15);
           transition: all 0.2s ease-in-out;
         }
 
         .save-button:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 14px 28px rgba(124, 58, 237, 0.3);
-        }
-
-        .save-button:active {
-          transform: translateY(0);
+          transform: translateY(-1px);
+          box-shadow: 0 6px 16px rgba(124, 58, 237, 0.25);
         }
 
         .save-button:disabled {
-          background: #d1d5db;
-          color: #9ca3af;
+          background: #cbd5e1;
+          color: #94a3b8;
           box-shadow: none;
           cursor: not-allowed;
           transform: none;
@@ -444,38 +595,114 @@ export default function Settings() {
         .spinner-white {
           border-color: rgba(255, 255, 255, 0.2);
           border-top-color: #ffffff;
-          width: 20px;
-          height: 20px;
+          width: 18px;
+          height: 18px;
         }
 
-        .button-group {
+        /* Footer styling */
+        .dashboard-footer {
+          margin-top: 50px;
+          border-top: 1px solid #e1e3e5;
+          padding-top: 20px;
           display: flex;
-          gap: 16px;
-          margin-top: 12px;
-          width: 100%;
+          justify-content: space-between;
+          align-items: center;
+          font-size: 13px;
+          color: #6d7175;
         }
 
-        .cancel-button {
-          background: #ffffff;
-          border: 1px solid #cbd5e1;
-          color: #475569;
-          border-radius: 16px;
-          padding: 16px 24px;
-          font-size: 16px;
-          font-weight: 700;
-          font-family: inherit;
+        .dashboard-footer a {
+          color: #7c3aed;
           text-decoration: none;
-          text-align: center;
-          display: block;
-          width: 100%;
-          box-sizing: border-box;
-          transition: all 0.2s;
+          font-weight: 500;
+          transition: color 0.2s;
         }
 
-        .cancel-button:hover {
-          background: #f8fafc;
-          border-color: #94a3b8;
-          transform: translateY(-1px);
+        .dashboard-footer a:hover {
+          color: #6d28d9;
+        }
+
+        .footer-links {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .widget-item {
+          display: flex;
+          gap: 12px;
+          margin-bottom: 16px;
+        }
+
+        .widget-item:last-child {
+          margin-bottom: 0;
+        }
+
+        .widget-dot-indicator {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: #7c3aed;
+          margin-top: 6px;
+          flex-shrink: 0;
+        }
+
+        .widget-text h4 {
+          font-size: 13.5px;
+          font-weight: 600;
+          color: #1c2434;
+          margin: 0;
+        }
+
+        .widget-text p {
+          font-size: 12.5px;
+          color: #6b7280;
+          margin: 4px 0 0 0;
+          line-height: 1.4;
+        }
+
+        .logs-list {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .log-item {
+          padding: 12px;
+          border-radius: 10px;
+          background: #fafafa;
+          border: 1px solid #f1f2f4;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          font-size: 12px;
+        }
+
+        .log-badge {
+          font-weight: 700;
+          font-size: 10px;
+          padding: 2px 6px;
+          border-radius: 4px;
+          text-transform: uppercase;
+        }
+
+        .log-badge.success {
+          background: #e6fcf5;
+          color: #0ca678;
+        }
+
+        .log-badge.info {
+          background: #e7f5ff;
+          color: #1c7ed6;
+        }
+
+        .log-info {
+          flex-grow: 1;
+        }
+
+        .log-time {
+          color: #a0aec0;
+          font-size: 11px;
         }
 
         @keyframes spin {
@@ -483,284 +710,379 @@ export default function Settings() {
         }
       `}</style>
 
-      <div className="flowbee-card">
-        <div className="flowbee-header">
-          <img src="https://app.flowbee.io/svg/brand-logos/logo-flowbee-secondary.svg" alt="Flowbee Logo" />
-          <h1>Update Configurations</h1>
-          <p>Modify templates and automatic customer notifications</p>
+      {/* Top Header */}
+      <div className="dashboard-header">
+        <div className="header-left">
+          <img src="https://app.flowbee.io/svg/brand-logos/logo-flowbee-secondary.svg" alt="Flowbee" className="logo-img" />
+          <div className="header-title-group">
+            <h1>Update Configurations</h1>
+            <p>Modify templates and automatic customer notifications</p>
+          </div>
         </div>
 
-        <form
-          ref={formRef}
-          onSubmit={handleSave}
-          key={settings?.updatedAt ? "updated" : "empty"}
-        >
-          {/* Section 1: Credentials */}
-          <div className="settings-section">
-            <div className="section-title">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-              Connection & Credentials
+        <div className="header-right">
+          <span className="store-badge">{shop}</span>
+          <span className={`status-badge ${isConnected ? "connected" : "disconnected"}`}>
+            <span className="status-dot"></span>
+            {isConnected ? "API Connected" : "API Disconnected"}
+          </span>
+        </div>
+      </div>
+
+      {/* Metrics Row */}
+      <div className="metrics-grid">
+        <div className="metric-card">
+          <div className="metric-icon-box">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+          </div>
+          <div className="metric-details">
+            <span className="metric-label">WhatsApp Sender</span>
+            <span className="metric-value">{formatPhone(settings?.flowbeeRegisteredPhone)}</span>
+          </div>
+        </div>
+
+        <div className="metric-card">
+          <div className="metric-icon-box" style={{ background: '#f0fdf4', color: '#16a34a' }}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+          </div>
+          <div className="metric-details">
+            <span className="metric-label">Admin Recipient</span>
+            <span className="metric-value">{formatPhone(settings?.flowbeeNotifyPhone)}</span>
+          </div>
+        </div>
+
+        <div className="metric-card">
+          <div className="metric-icon-box" style={{ background: '#eff6ff', color: '#2563eb' }}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          </div>
+          <div className="metric-details">
+            <span className="metric-label">Cart Recovery Delay</span>
+            <span className="metric-value">{formatDelay(settings?.flowbeeAbandonedCartDelay)}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main 2-Column Grid */}
+      <form ref={formRef} onSubmit={handleSave}>
+        <div className="dashboard-content-layout">
+          {/* Left Column (Inputs Cards) */}
+          <div className="dashboard-column">
+            {/* Section 1: Credentials */}
+            <div className="dash-card">
+              <div className="dash-card-header">
+                <h2 className="dash-card-title">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                  Connection & Credentials
+                </h2>
+              </div>
+              <div className="dash-card-body">
+                <div className="field-group">
+                  <span className="field-label">Flowbee API Key</span>
+                  <div className="api-key-container">
+                    <input
+                      className="modern-input"
+                      name="flowbeeApiKey"
+                      type={showApiKey ? "text" : "password"}
+                      defaultValue={settings?.flowbeeApiKey || ""}
+                      placeholder="Enter API Key"
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="api-key-toggle"
+                      onClick={() => setShowApiKey(!showApiKey)}
+                    >
+                      {showApiKey ? (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                      ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="field-group">
+                  <span className="field-label">Company Name</span>
+                  <input
+                    className="modern-input"
+                    name="flowbeeCompany"
+                    defaultValue={settings?.flowbeeCompany || ""}
+                    placeholder="Enter Company Name"
+                    required
+                  />
+                </div>
+              </div>
             </div>
-            
-            <div className="field-group">
-              <span className="field-label">Flowbee API Key</span>
-              <div className="api-key-container">
-                <input
-                  className="modern-input"
-                  name="flowbeeApiKey"
-                  type={showApiKey ? "text" : "password"}
-                  defaultValue={settings?.flowbeeApiKey || ""}
-                  placeholder="Enter API Key"
-                  required
-                />
-                <button
-                  type="button"
-                  className="api-key-toggle"
-                  onClick={() => setShowApiKey(!showApiKey)}
-                >
-                  {showApiKey ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                  )}
+
+            {/* Section 2: Numbers */}
+            <div className="dash-card">
+              <div className="dash-card-header">
+                <h2 className="dash-card-title">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                  Phone Setup
+                </h2>
+              </div>
+              <div className="dash-card-body">
+                <div className="field-group">
+                  <span className="field-label">Registered WhatsApp Number</span>
+                  <div className="phone-group">
+                    <select name="flowbeeRegisteredPhone_country" className="country-select" defaultValue={regPhone.country}>
+                      {COUNTRY_CODES.map(c => <option key={c.code} value={c.code}>+{c.code}</option>)}
+                    </select>
+                    <input
+                      className="modern-input"
+                      name="flowbeeRegisteredPhone_number"
+                      defaultValue={regPhone.number}
+                      placeholder="WhatsApp number"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="field-group">
+                  <span className="field-label">Notification Phone Number (Admin)</span>
+                  <div className="phone-group">
+                    <select name="flowbeeNotifyPhone_country" className="country-select" defaultValue={notifyPhone.country}>
+                      {COUNTRY_CODES.map(c => <option key={c.code} value={c.code}>+{c.code}</option>)}
+                    </select>
+                    <input
+                      className="modern-input"
+                      name="flowbeeNotifyPhone_number"
+                      defaultValue={notifyPhone.number}
+                      placeholder="Admin phone number"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Section 3: Templates */}
+            <div className="dash-card">
+              <div className="dash-card-header">
+                <h2 className="dash-card-title">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="9"></line><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="11" y2="17"></line></svg>
+                  WhatsApp Templates
+                </h2>
+                <button type="button" className="fetch-button" onClick={handleFetch} disabled={isFetching}>
+                  {isFetching ? <span className="spinner"></span> : null}
+                  {isFetching ? "Loading..." : "Sync Templates"}
                 </button>
               </div>
-            </div>
+              <div className="dash-card-body">
+                <div className="field-group">
+                  <span className="field-label">Order Created Notification</span>
+                  <select 
+                    className="modern-select"
+                    name="flowbeeTemplateOrderCreated" 
+                    defaultValue={settings?.flowbeeTemplateOrderCreated || settings?.flowbeeTemplateId || ""}
+                  >
+                    <option value="">-- Select Template --</option>
+                    {templateList.map((t) => (
+                      <option key={t.template_id || t.id} value={t.template_id || t.id}>
+                        {t.template_name || t.name} ({t.template_id || t.id})
+                      </option>
+                    ))}
+                    {(settings?.flowbeeTemplateOrderCreated || settings?.flowbeeTemplateId) && !templateList.some(t => (t.template_id || t.id) === (settings.flowbeeTemplateOrderCreated || settings.flowbeeTemplateId)) && (
+                      <option value={settings.flowbeeTemplateOrderCreated || settings.flowbeeTemplateId}>
+                        Saved: {settings.flowbeeTemplateOrderCreated || settings.flowbeeTemplateId}
+                      </option>
+                    )}
+                  </select>
+                </div>
 
-            <div className="field-group">
-              <span className="field-label">Company Name</span>
-              <input
-                className="modern-input"
-                name="flowbeeCompany"
-                defaultValue={settings?.flowbeeCompany || ""}
-                placeholder="Enter Company Name"
-                required
-              />
-            </div>
-          </div>
+                <div className="field-group">
+                  <span className="field-label">Order Paid Notification</span>
+                  <select 
+                    className="modern-select"
+                    name="flowbeeTemplateOrderPaid" 
+                    defaultValue={settings?.flowbeeTemplateOrderPaid || ""}
+                  >
+                    <option value="">-- Select Template --</option>
+                    {templateList.map((t) => (
+                      <option key={t.template_id || t.id} value={t.template_id || t.id}>
+                        {t.template_name || t.name} ({t.template_id || t.id})
+                      </option>
+                    ))}
+                    {settings?.flowbeeTemplateOrderPaid && !templateList.some(t => (t.template_id || t.id) === settings.flowbeeTemplateOrderPaid) && (
+                      <option value={settings.flowbeeTemplateOrderPaid}>
+                        Saved: {settings.flowbeeTemplateOrderPaid}
+                      </option>
+                    )}
+                  </select>
+                </div>
 
-          {/* Section 2: Numbers */}
-          <div className="settings-section">
-            <div className="section-title">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-              Phone Setup
-            </div>
+                <div className="field-group">
+                  <span className="field-label">Order Shipped Notification</span>
+                  <select 
+                    className="modern-select"
+                    name="flowbeeTemplateOrderFulfilled" 
+                    defaultValue={settings?.flowbeeTemplateOrderFulfilled || ""}
+                  >
+                    <option value="">-- Select Template --</option>
+                    {templateList.map((t) => (
+                      <option key={t.template_id || t.id} value={t.template_id || t.id}>
+                        {t.template_name || t.name} ({t.template_id || t.id})
+                      </option>
+                    ))}
+                    {settings?.flowbeeTemplateOrderFulfilled && !templateList.some(t => (t.template_id || t.id) === settings.flowbeeTemplateOrderFulfilled) && (
+                      <option value={settings.flowbeeTemplateOrderFulfilled}>
+                        Saved: {settings.flowbeeTemplateOrderFulfilled}
+                      </option>
+                    )}
+                  </select>
+                </div>
 
-            <div className="field-group">
-              <span className="field-label">Registered WhatsApp Number</span>
-              <div className="phone-group">
-                <select name="flowbeeRegisteredPhone_country" className="country-select" defaultValue={regPhone.country}>
-                  {COUNTRY_CODES.map(c => <option key={c.code} value={c.code}>+{c.code}</option>)}
-                </select>
-                <input
-                  className="modern-input"
-                  name="flowbeeRegisteredPhone_number"
-                  defaultValue={regPhone.number}
-                  placeholder="WhatsApp number"
-                  required
-                />
+                <div className="field-group">
+                  <span className="field-label">Order Cancelled Notification</span>
+                  <select 
+                    className="modern-select"
+                    name="flowbeeTemplateOrderCancelled" 
+                    defaultValue={settings?.flowbeeTemplateOrderCancelled || ""}
+                  >
+                    <option value="">-- Select Template --</option>
+                    {templateList.map((t) => (
+                      <option key={t.template_id || t.id} value={t.template_id || t.id}>
+                        {t.template_name || t.name} ({t.template_id || t.id})
+                      </option>
+                    ))}
+                    {settings?.flowbeeTemplateOrderCancelled && !templateList.some(t => (t.template_id || t.id) === settings.flowbeeTemplateOrderCancelled) && (
+                      <option value={settings.flowbeeTemplateOrderCancelled}>
+                        Saved: {settings.flowbeeTemplateOrderCancelled}
+                      </option>
+                    )}
+                  </select>
+                </div>
               </div>
             </div>
 
-            <div className="field-group">
-              <span className="field-label">Notification Phone Number (Admin)</span>
-              <div className="phone-group">
-                <select name="flowbeeNotifyPhone_country" className="country-select" defaultValue={notifyPhone.country}>
-                  {COUNTRY_CODES.map(c => <option key={c.code} value={c.code}>+{c.code}</option>)}
-                </select>
-                <input
-                  className="modern-input"
-                  name="flowbeeNotifyPhone_number"
-                  defaultValue={notifyPhone.number}
-                  placeholder="Admin phone number"
-                  required
-                />
+            {/* Section 4: Abandoned Cart */}
+            <div className="dash-card">
+              <div className="dash-card-header">
+                <h2 className="dash-card-title">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                  Abandoned Cart Recovery
+                </h2>
+              </div>
+              <div className="dash-card-body">
+                <div className="field-group">
+                  <span className="field-label">Recovery Template</span>
+                  <select 
+                    className="modern-select"
+                    name="flowbeeTemplateAbandonedCart" 
+                    defaultValue={settings?.flowbeeTemplateAbandonedCart || ""}
+                  >
+                    <option value="">-- Select Template --</option>
+                    {templateList.map((t) => (
+                      <option key={t.template_id || t.id} value={t.template_id || t.id}>
+                        {t.template_name || t.name} ({t.template_id || t.id})
+                      </option>
+                    ))}
+                    {settings?.flowbeeTemplateAbandonedCart && !templateList.some(t => (t.template_id || t.id) === settings.flowbeeTemplateAbandonedCart) && (
+                      <option value={settings.flowbeeTemplateAbandonedCart}>
+                        Saved: {settings.flowbeeTemplateAbandonedCart}
+                      </option>
+                    )}
+                  </select>
+                </div>
+
+                <div className="field-group">
+                  <span className="field-label">Recovery Message Delay</span>
+                  <select 
+                    className="modern-select"
+                    name="flowbeeAbandonedCartDelay" 
+                    defaultValue={settings?.flowbeeAbandonedCartDelay || "1800"}
+                  >
+                    <option value="30">30 seconds (Testing)</option>
+                    <option value="900">15 minutes</option>
+                    <option value="1800">30 minutes</option>
+                    <option value="3600">1 hour</option>
+                    <option value="7200">2 hours</option>
+                  </select>
+                </div>
+
+                <div className="field-group">
+                  <span className="field-label">Recovery Attempt Limits</span>
+                  <select 
+                    className="modern-select"
+                    name="flowbeeAbandonedCartCount" 
+                    defaultValue={settings?.flowbeeAbandonedCartCount || "1"}
+                  >
+                    <option value="1">Send 1 recovery message</option>
+                    <option value="2">Send 2 recovery messages</option>
+                    <option value="3">Send 3 recovery messages</option>
+                  </select>
+                </div>
+
+                <div className="field-group">
+                  <span className="field-label">Interval Between Recovery Messages</span>
+                  <select 
+                    className="modern-select"
+                    name="flowbeeAbandonedCartInterval" 
+                    defaultValue={settings?.flowbeeAbandonedCartInterval || "86400"}
+                  >
+                    <option value="30">30 seconds (Testing)</option>
+                    <option value="3600">1 hour</option>
+                    <option value="7200">2 hours</option>
+                    <option value="43200">12 hours</option>
+                    <option value="86400">24 hours</option>
+                  </select>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Section 3: Templates */}
-          <div className="settings-section">
-            <div className="templates-header">
-              <div className="section-title" style={{ margin: 0, border: 'none', padding: 0 }}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="9"></line><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="11" y2="17"></line></svg>
-                WhatsApp Templates
-              </div>
-              <button type="button" className="fetch-button" onClick={handleFetch} disabled={isFetching}>
-                {isFetching ? <span className="spinner"></span> : null}
-                {isFetching ? "Loading..." : "Sync Templates"}
+            {/* Actions Form */}
+            <div className="button-group">
+              <Link to="/app" className="cancel-button">Cancel</Link>
+              <button
+                className="save-button"
+                type="submit"
+                disabled={isSaving}
+              >
+                {isSaving ? <span className="spinner spinner-white"></span> : "Save Configurations"}
               </button>
             </div>
-
-            <div className="field-group">
-              <span className="field-label">Order Created Notification</span>
-              <select 
-                className="modern-select"
-                name="flowbeeTemplateOrderCreated" 
-                defaultValue={settings?.flowbeeTemplateOrderCreated || settings?.flowbeeTemplateId || ""}
-              >
-                <option value="">-- Select Template --</option>
-                {templateList.map((t) => (
-                  <option key={t.template_id || t.id} value={t.template_id || t.id}>
-                    {t.template_name || t.name} ({t.template_id || t.id})
-                  </option>
-                ))}
-                {(settings?.flowbeeTemplateOrderCreated || settings?.flowbeeTemplateId) && !templateList.some(t => (t.template_id || t.id) === (settings.flowbeeTemplateOrderCreated || settings.flowbeeTemplateId)) && (
-                  <option value={settings.flowbeeTemplateOrderCreated || settings.flowbeeTemplateId}>
-                    Saved: {settings.flowbeeTemplateOrderCreated || settings.flowbeeTemplateId}
-                  </option>
-                )}
-              </select>
-            </div>
-
-            <div className="field-group">
-              <span className="field-label">Order Paid Notification</span>
-              <select 
-                className="modern-select"
-                name="flowbeeTemplateOrderPaid" 
-                defaultValue={settings?.flowbeeTemplateOrderPaid || ""}
-              >
-                <option value="">-- Select Template --</option>
-                {templateList.map((t) => (
-                  <option key={t.template_id || t.id} value={t.template_id || t.id}>
-                    {t.template_name || t.name} ({t.template_id || t.id})
-                  </option>
-                ))}
-                {settings?.flowbeeTemplateOrderPaid && !templateList.some(t => (t.template_id || t.id) === settings.flowbeeTemplateOrderPaid) && (
-                  <option value={settings.flowbeeTemplateOrderPaid}>
-                    Saved: {settings.flowbeeTemplateOrderPaid}
-                  </option>
-                )}
-              </select>
-            </div>
-
-            <div className="field-group">
-              <span className="field-label">Order Shipped Notification</span>
-              <select 
-                className="modern-select"
-                name="flowbeeTemplateOrderFulfilled" 
-                defaultValue={settings?.flowbeeTemplateOrderFulfilled || ""}
-              >
-                <option value="">-- Select Template --</option>
-                {templateList.map((t) => (
-                  <option key={t.template_id || t.id} value={t.template_id || t.id}>
-                    {t.template_name || t.name} ({t.template_id || t.id})
-                  </option>
-                ))}
-                {settings?.flowbeeTemplateOrderFulfilled && !templateList.some(t => (t.template_id || t.id) === settings.flowbeeTemplateOrderFulfilled) && (
-                  <option value={settings.flowbeeTemplateOrderFulfilled}>
-                    Saved: {settings.flowbeeTemplateOrderFulfilled}
-                  </option>
-                )}
-              </select>
-            </div>
-
-            <div className="field-group">
-              <span className="field-label">Order Cancelled Notification</span>
-              <select 
-                className="modern-select"
-                name="flowbeeTemplateOrderCancelled" 
-                defaultValue={settings?.flowbeeTemplateOrderCancelled || ""}
-              >
-                <option value="">-- Select Template --</option>
-                {templateList.map((t) => (
-                  <option key={t.template_id || t.id} value={t.template_id || t.id}>
-                    {t.template_name || t.name} ({t.template_id || t.id})
-                  </option>
-                ))}
-                {settings?.flowbeeTemplateOrderCancelled && !templateList.some(t => (t.template_id || t.id) === settings.flowbeeTemplateOrderCancelled) && (
-                  <option value={settings.flowbeeTemplateOrderCancelled}>
-                    Saved: {settings.flowbeeTemplateOrderCancelled}
-                  </option>
-                )}
-              </select>
-            </div>
           </div>
 
-          {/* Section 4: Abandoned Cart */}
-          <div className="settings-section">
-            <div className="section-title">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-              Abandoned Cart Recovery
-            </div>
-
-            <div className="field-group">
-              <span className="field-label">Recovery Template</span>
-              <select 
-                className="modern-select"
-                name="flowbeeTemplateAbandonedCart" 
-                defaultValue={settings?.flowbeeTemplateAbandonedCart || ""}
-              >
-                <option value="">-- Select Template --</option>
-                {templateList.map((t) => (
-                  <option key={t.template_id || t.id} value={t.template_id || t.id}>
-                    {t.template_name || t.name} ({t.template_id || t.id})
-                  </option>
-                ))}
-                {settings?.flowbeeTemplateAbandonedCart && !templateList.some(t => (t.template_id || t.id) === settings.flowbeeTemplateAbandonedCart) && (
-                  <option value={settings.flowbeeTemplateAbandonedCart}>
-                    Saved: {settings.flowbeeTemplateAbandonedCart}
-                  </option>
-                )}
-              </select>
-            </div>
-
-            <div className="field-group">
-              <span className="field-label">Recovery Message Delay</span>
-              <select 
-                className="modern-select"
-                name="flowbeeAbandonedCartDelay" 
-                defaultValue={settings?.flowbeeAbandonedCartDelay || "1800"}
-              >
-                <option value="30">30 seconds (Testing)</option>
-                <option value="900">15 minutes</option>
-                <option value="1800">30 minutes</option>
-                <option value="3600">1 hour</option>
-                <option value="7200">2 hours</option>
-              </select>
-            </div>
-
-            <div className="field-group">
-              <span className="field-label">Recovery Attempt Limits</span>
-              <select 
-                className="modern-select"
-                name="flowbeeAbandonedCartCount" 
-                defaultValue={settings?.flowbeeAbandonedCartCount || "1"}
-              >
-                <option value="1">Send 1 recovery message</option>
-                <option value="2">Send 2 recovery messages</option>
-                <option value="3">Send 3 recovery messages</option>
-              </select>
-            </div>
-
-            <div className="field-group">
-              <span className="field-label">Interval Between Recovery Messages</span>
-              <select 
-                className="modern-select"
-                name="flowbeeAbandonedCartInterval" 
-                defaultValue={settings?.flowbeeAbandonedCartInterval || "86400"}
-              >
-                <option value="30">30 seconds (Testing)</option>
-                <option value="3600">1 hour</option>
-                <option value="7200">2 hours</option>
-                <option value="43200">12 hours</option>
-                <option value="86400">24 hours</option>
-              </select>
+          {/* Right Column (Widget / Help column) */}
+          <div className="dashboard-column">
+            {/* Quick Guide */}
+            <div className="dash-card">
+              <div className="dash-card-header">
+                <h2 className="dash-card-title">Editing Tips</h2>
+              </div>
+              <div className="dash-card-body" style={{ padding: '24px' }}>
+                <div className="widget-item">
+                  <div className="widget-dot-indicator"></div>
+                  <div className="widget-text">
+                    <h4>Sync Approved Templates</h4>
+                    <p>Make sure to enter your API key and registered phone number, then click **Sync Templates** to load your WhatsApp Business approved templates dynamically.</p>
+                  </div>
+                </div>
+                <div className="widget-item">
+                  <div className="widget-dot-indicator"></div>
+                  <div className="widget-text">
+                    <h4>Admin Notification Recipient</h4>
+                    <p>Provide a valid phone number (with country code) to receive administrative notifications regarding order triggers.</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
+        </div>
+      </form>
 
-          <div className="button-group">
-            <Link to={`/app?shop=${shop}`} className="cancel-button">Cancel</Link>
-            <button
-              className="save-button"
-              type="submit"
-              disabled={isSaving}
-            >
-              {isSaving ? <span className="spinner spinner-white"></span> : "Save Configurations"}
-            </button>
-          </div>
-        </form>
-      </div>
+      {/* Unified Footer */}
+      <footer className="dashboard-footer">
+        <p>&copy; {new Date().getFullYear()} Flowbee.io. All rights reserved.</p>
+        <div className="footer-links">
+          <a href="https://flowbee.io" target="_blank" rel="noopener noreferrer">Website</a>
+          <span>&bull;</span>
+          <a href="mailto:support@flowbee.io">Support</a>
+          <span>&bull;</span>
+          <a href="https://flowbee.io/docs" target="_blank" rel="noopener noreferrer">Documentation</a>
+        </div>
+      </footer>
     </div>
   );
 }
