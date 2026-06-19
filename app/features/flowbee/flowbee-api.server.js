@@ -10,50 +10,103 @@ function normalizePhoneNumber(phoneNumber) {
   return String(phoneNumber || "").replace(/\D/g, "");
 }
 
-function getTemplateParameterNames(templateId) {
-  return (
-    TEMPLATE_PARAMETER_NAMES[templateId] || TEMPLATE_PARAMETER_NAMES.default
-  );
-}
 
 function buildTemplatePayload({
   settings,
   recipientPhone,
   bodyValues,
   templateId,
+  fetchedTemplates = [],
 }) {
   const registeredPhone = normalizePhoneNumber(settings.flowbeeRegisteredPhone);
   const targetRecipient = normalizePhoneNumber(recipientPhone);
   const activeTemplateId = templateId || settings.flowbeeTemplateId;
-  const parameterNames = getTemplateParameterNames(activeTemplateId);
 
-  if (!Array.isArray(parameterNames)) {
-    throw new Error(
-      `No parameter mapping found for template ${activeTemplateId}`,
-    );
+  // Try to find the template in fetched list
+  const matchedTemplate = fetchedTemplates.find(
+    t => String(t.template_id || t.id) === String(activeTemplateId)
+  );
+
+  let parameters = [];
+
+  if (matchedTemplate) {
+    console.log(`[FLOWBEE] Found matched template ${activeTemplateId} dynamically.`);
+    let bodyText = "";
+    if (Array.isArray(matchedTemplate.components)) {
+      const bodyComp = matchedTemplate.components.find(
+        c => String(c.type).toUpperCase() === "BODY"
+      );
+      if (bodyComp && bodyComp.text) {
+        bodyText = bodyComp.text;
+      }
+    }
+    if (!bodyText) {
+      bodyText =
+        matchedTemplate.template_text ||
+        matchedTemplate.body ||
+        matchedTemplate.text ||
+        matchedTemplate.template_body ||
+        "";
+    }
+
+    const regex = /\{\{([^}]+)\}\}/g;
+    const placeholders = [];
+    let match;
+    while ((match = regex.exec(bodyText)) !== null) {
+      const name = match[1].trim();
+      if (!placeholders.includes(name)) {
+        placeholders.push(name);
+      }
+    }
+
+    console.log(`[FLOWBEE] Parsed template placeholders:`, placeholders);
+
+    parameters = placeholders.map((name, index) => {
+      let value = "";
+      
+      // If placeholder name is numeric (e.g. {{1}}, {{2}})
+      if (/^\d+$/.test(name)) {
+        const valIdx = parseInt(name, 10) - 1;
+        value = bodyValues[valIdx] !== undefined ? bodyValues[valIdx] : "";
+      } else {
+        // Find index of the placeholder name in TEMPLATE_PARAMETER_NAMES
+        const matchedIdx = TEMPLATE_PARAMETER_NAMES.indexOf(name);
+        if (matchedIdx !== -1) {
+          value = bodyValues[matchedIdx] !== undefined ? bodyValues[matchedIdx] : "";
+        } else {
+          // Fall back to case/character insensitive matching or index position
+          const lowerName = name.toLowerCase();
+          const backupIdx = TEMPLATE_PARAMETER_NAMES.findIndex(
+            n => n.toLowerCase() === lowerName || n.toLowerCase().replace(/_/g, "") === lowerName.replace(/_/g, "")
+          );
+          if (backupIdx !== -1) {
+            value = bodyValues[backupIdx] !== undefined ? bodyValues[backupIdx] : "";
+          } else {
+            value = bodyValues[index] !== undefined ? bodyValues[index] : "";
+          }
+        }
+      }
+
+      return {
+        type: "TEXT",
+        name: name,
+        value: String(value),
+      };
+    });
+  } else {
+    console.log(`[FLOWBEE] Template ${activeTemplateId} not found in fetched templates. Falling back to default parameter mapping.`);
+    // Fallback: use default naming / sizing
+    const fallbackNames = TEMPLATE_PARAMETER_NAMES;
+
+    // Build values using the index
+    parameters = fallbackNames.map((name, index) => {
+      return {
+        type: "TEXT",
+        name: name,
+        value: String(bodyValues[index] !== undefined ? bodyValues[index] : ""),
+      };
+    });
   }
-
-  if (!Array.isArray(bodyValues)) {
-    throw new Error("bodyValues must be an array");
-  }
-
-  const defaultNames = TEMPLATE_PARAMETER_NAMES.default;
-
-  // Map default parameter names to values by index
-  const valueMap = {};
-  defaultNames.forEach((name, index) => {
-    valueMap[name] = bodyValues[index] !== undefined ? bodyValues[index] : "";
-  });
-
-  // Generate parameter objects matching the active template parameter names
-  const parameters = parameterNames.map((name, index) => {
-    const value = valueMap[name] !== undefined ? valueMap[name] : (bodyValues[index] !== undefined ? bodyValues[index] : "");
-    return {
-      type: "TEXT",
-      name: name,
-      value: String(value),
-    };
-  });
 
   return {
     company: settings.flowbeeCompany || FLOWBEE_COMPANY_FALLBACK,
@@ -95,11 +148,24 @@ export async function sendFlowbeeTemplateMessage({
   let payload;
 
   try {
+    let fetchedTemplates = [];
+    try {
+      if (settings?.flowbeeApiKey) {
+        fetchedTemplates = await fetchFlowbeeTemplates(
+          settings.flowbeeApiKey,
+          settings.flowbeeRegisteredPhone
+        );
+      }
+    } catch (e) {
+      console.error("[FLOWBEE] Failed to fetch templates at runtime, falling back:", e.message);
+    }
+
     payload = buildTemplatePayload({
       settings,
       recipientPhone,
       bodyValues,
       templateId,
+      fetchedTemplates,
     });
 
     logToFile(

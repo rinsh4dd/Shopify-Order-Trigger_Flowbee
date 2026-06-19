@@ -5,18 +5,12 @@ export const FLOWBEE_SETTINGS_COLLECTION = "flowbeeSettings";
 export const FLOWBEE_DEV_STORE = "flowbee-dev.myshopify.com";
 export const SHOPIFY_CLI_WEBHOOK_STORE = "shop.myshopify.com";
 
-export const TEMPLATE_PARAMETER_NAMES = {
-  default: [
-    "customer_name",
-    "order_id",
-    "product",
-    "quantity",
-    "total",
-    "status",
-  ],
-  "1556930419135772": [
-    "customer_name",
-    "product",
-    "status",
-  ],
-};
+export const TEMPLATE_PARAMETER_NAMES = [
+  "customer_name",
+  "order_id",
+  "product",
+  "quantity",
+  "total",
+  "status",
+];
+

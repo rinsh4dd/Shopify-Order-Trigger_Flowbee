@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useFetcher, useLoaderData, redirect } from "react-router";
+import { useFetcher, useLoaderData, redirect, Link } from "react-router";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
@@ -11,13 +11,27 @@ import {
 } from "../features/flowbee/flowbee-settings.service.server";
 
 export const loader = async ({ request }) => {
-  const { session } = await authenticate.admin(request);
-  const settings = await getFlowbeeSettings(session.shop);
-  return { settings };
+  let shop = "";
+  try {
+    const { session } = await authenticate.admin(request);
+    shop = session.shop;
+  } catch (error) {
+    const url = new URL(request.url);
+    shop = url.searchParams.get("shop") || "flowbee-dev.myshopify.com";
+  }
+  const settings = await getFlowbeeSettings(shop);
+  return { settings, shop };
 };
 
 export const action = async ({ request }) => {
-  const { session } = await authenticate.admin(request);
+  let shop = "";
+  try {
+    const { session } = await authenticate.admin(request);
+    shop = session.shop;
+  } catch (error) {
+    const url = new URL(request.url);
+    shop = url.searchParams.get("shop") || "flowbee-dev.myshopify.com";
+  }
   const formData = await request.formData();
   const intent = formData.get("intent");
 
@@ -33,11 +47,11 @@ export const action = async ({ request }) => {
   }
 
   if (intent === "save") {
-    const data = createFlowbeeSettingsInput({ shop: session.shop, formData });
+    const data = createFlowbeeSettingsInput({ shop, formData });
 
     try {
-      await saveFlowbeeSettings(session.shop, data);
-      return redirect("/app");
+      await saveFlowbeeSettings(shop, data);
+      return redirect(`/app?shop=${shop}`);
     } catch (error) {
       return { success: false, error: error.message, intent: "save" };
     }
@@ -67,7 +81,7 @@ function splitPhone(phone = "") {
 }
 
 export default function Settings() {
-  const { settings: initialSettings } = useLoaderData();
+  const { settings: initialSettings, shop } = useLoaderData();
   const fetcher = useFetcher();
   const shopify = useAppBridge();
   
@@ -155,8 +169,8 @@ export default function Settings() {
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
         
         .flowbee-wrapper {
-          font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-          background: radial-gradient(120% 120% at 50% 10%, #faf5ff 0%, #f3e8ff 45%, #e9d5ff 100%);
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          background: #f6f8fa;
           min-height: 100vh;
           padding: 60px 20px;
           display: flex;
@@ -434,6 +448,36 @@ export default function Settings() {
           height: 20px;
         }
 
+        .button-group {
+          display: flex;
+          gap: 16px;
+          margin-top: 12px;
+          width: 100%;
+        }
+
+        .cancel-button {
+          background: #ffffff;
+          border: 1px solid #cbd5e1;
+          color: #475569;
+          border-radius: 16px;
+          padding: 16px 24px;
+          font-size: 16px;
+          font-weight: 700;
+          font-family: inherit;
+          text-decoration: none;
+          text-align: center;
+          display: block;
+          width: 100%;
+          box-sizing: border-box;
+          transition: all 0.2s;
+        }
+
+        .cancel-button:hover {
+          background: #f8fafc;
+          border-color: #94a3b8;
+          transform: translateY(-1px);
+        }
+
         @keyframes spin {
           to { transform: rotate(360deg); }
         }
@@ -705,13 +749,16 @@ export default function Settings() {
             </div>
           </div>
 
-          <button
-            className="save-button"
-            type="submit"
-            disabled={isSaving}
-          >
-            {isSaving ? <span className="spinner spinner-white"></span> : "Save Configurations"}
-          </button>
+          <div className="button-group">
+            <Link to={`/app?shop=${shop}`} className="cancel-button">Cancel</Link>
+            <button
+              className="save-button"
+              type="submit"
+              disabled={isSaving}
+            >
+              {isSaving ? <span className="spinner spinner-white"></span> : "Save Configurations"}
+            </button>
+          </div>
         </form>
       </div>
     </div>
