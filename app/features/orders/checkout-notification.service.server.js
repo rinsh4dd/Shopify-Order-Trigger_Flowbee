@@ -27,6 +27,14 @@ export async function processCheckoutWebhook({ shop, payload, topic }) {
   const phone = payload.phone || payload.customer?.phone || payload.shipping_address?.phone || payload.billing_address?.phone;
   if (!phone) {
     console.log(`[WEBHOOK] Checkout ${checkoutId} has no customer phone number. Skipping notification.`);
+    console.log("[DEBUG] Payload phone keys:", {
+      directPhone: payload.phone,
+      customerPhone: payload.customer?.phone,
+      shippingPhone: payload.shipping_address?.phone,
+      billingPhone: payload.billing_address?.phone,
+      email: payload.email,
+      shippingName: payload.shipping_address?.name
+    });
     return;
   }
 
