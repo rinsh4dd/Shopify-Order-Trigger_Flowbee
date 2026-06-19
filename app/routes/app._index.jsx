@@ -80,7 +80,7 @@ export default function Index() {
         
         .dashboard-container {
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-          background: #f6f8fa;
+          background: #fefdf0;
           min-height: 100vh;
           padding: 30px 40px;
           color: #202223;
@@ -92,7 +92,7 @@ export default function Index() {
           justify-content: space-between;
           align-items: center;
           margin-bottom: 30px;
-          border-bottom: 1px solid #e1e3e5;
+          border-bottom: 1px solid #fde68a;
           padding-bottom: 20px;
         }
 
@@ -110,13 +110,13 @@ export default function Index() {
           font-family: 'Plus Jakarta Sans', sans-serif;
           font-size: 22px;
           font-weight: 800;
-          color: #1e1b4b;
+          color: #78350f;
           margin: 0;
         }
 
         .header-title-group p {
           font-size: 13px;
-          color: #6d7175;
+          color: #b45309;
           margin: 4px 0 0 0;
         }
 
@@ -127,13 +127,13 @@ export default function Index() {
         }
 
         .store-badge {
-          background: #e2e8f0;
-          color: #475569;
+          background: #fef3c7;
+          color: #78350f;
           font-size: 13px;
           font-weight: 600;
           padding: 6px 12px;
           border-radius: 9999px;
-          border: 1px solid #cbd5e1;
+          border: 1px solid #fde68a;
         }
 
         .status-badge {
@@ -190,7 +190,7 @@ export default function Index() {
 
         .metric-card {
           background: #ffffff;
-          border: 1px solid #e1e3e5;
+          border: 1px solid #fde68a;
           border-radius: 16px;
           padding: 24px;
           display: flex;
@@ -201,13 +201,14 @@ export default function Index() {
         }
 
         .metric-card:hover {
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.03);
+          box-shadow: 0 10px 15px -3px rgba(245, 158, 11, 0.05);
+          border-color: #f59e0b;
           transform: translateY(-2px);
         }
 
         .metric-icon-box {
-          background: #faf5ff;
-          color: #7c3aed;
+          background: #fef3c7;
+          color: #d97706;
           width: 52px;
           height: 52px;
           border-radius: 12px;
@@ -223,14 +224,14 @@ export default function Index() {
 
         .metric-label {
           font-size: 13px;
-          color: #6d7175;
+          color: #b45309;
           font-weight: 500;
         }
 
         .metric-value {
           font-size: 16px;
           font-weight: 700;
-          color: #1c2434;
+          color: #78350f;
           margin-top: 4px;
         }
 
@@ -256,7 +257,7 @@ export default function Index() {
         /* Modern Dashboard Card */
         .dash-card {
           background: #ffffff;
-          border: 1px solid #e1e3e5;
+          border: 1px solid #fde68a;
           border-radius: 20px;
           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.01);
           overflow: hidden;
@@ -264,7 +265,7 @@ export default function Index() {
 
         .dash-card-header {
           padding: 24px 28px;
-          border-bottom: 1px solid #f1f2f4;
+          border-bottom: 1px solid #fef3c7;
           display: flex;
           justify-content: space-between;
           align-items: center;
@@ -275,7 +276,7 @@ export default function Index() {
           font-family: 'Plus Jakarta Sans', sans-serif;
           font-size: 16px;
           font-weight: 700;
-          color: #1e1b4b;
+          color: #78350f;
           display: flex;
           align-items: center;
           gap: 10px;
@@ -293,7 +294,7 @@ export default function Index() {
           align-items: center;
           padding: 16px 20px;
           border-radius: 12px;
-          border: 1px solid #f1f2f4;
+          border: 1px solid #fef3c7;
           background: #fafafa;
           margin-bottom: 14px;
           transition: all 0.2s;
@@ -304,8 +305,8 @@ export default function Index() {
         }
 
         .automation-item:hover {
-          border-color: #7c3aed;
-          background: #fdfaff;
+          border-color: #f59e0b;
+          background: #fefdf0;
         }
 
         .automation-info {
@@ -366,7 +367,7 @@ export default function Index() {
         .info-row {
           display: flex;
           justify-content: space-between;
-          border-bottom: 1px solid #f1f2f4;
+          border-bottom: 1px solid #fef3c7;
           padding: 14px 0;
         }
 
@@ -390,14 +391,14 @@ export default function Index() {
         /* Action bar */
         .locked-banner {
           background: #ffffff;
-          border: 1px solid #d8b4fe;
+          border: 1px solid #fde68a;
           border-radius: 16px;
           padding: 16px 24px;
           margin-bottom: 24px;
           display: flex;
           align-items: center;
           justify-content: space-between;
-          box-shadow: 0 4px 12px rgba(124, 58, 237, 0.03);
+          box-shadow: 0 4px 12px rgba(245, 158, 11, 0.02);
           box-sizing: border-box;
           width: 100%;
         }
@@ -409,20 +410,20 @@ export default function Index() {
         }
 
         .banner-content strong {
-          color: #4c1d95;
+          color: #78350f;
           font-size: 14.5px;
           font-weight: 700;
           display: block;
         }
 
         .banner-content p {
-          color: #6b7280;
+          color: #b45309;
           font-size: 13px;
           margin: 4px 0 0 0;
         }
 
         .update-link-btn {
-          background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+          background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
           color: #ffffff !important;
           text-decoration: none;
           padding: 10px 22px;
@@ -434,12 +435,12 @@ export default function Index() {
           display: inline-flex;
           align-items: center;
           gap: 8px;
-          box-shadow: 0 4px 10px rgba(124, 58, 237, 0.15);
+          box-shadow: 0 4px 10px rgba(245, 158, 11, 0.15);
         }
 
         .update-link-btn:hover {
           transform: translateY(-1px);
-          box-shadow: 0 6px 14px rgba(124, 58, 237, 0.22);
+          box-shadow: 0 6px 14px rgba(245, 158, 11, 0.22);
         }
 
         /* Side column widgets */
@@ -457,7 +458,7 @@ export default function Index() {
           width: 8px;
           height: 8px;
           border-radius: 50%;
-          background: #7c3aed;
+          background: #f59e0b;
           margin-top: 6px;
           flex-shrink: 0;
         }
@@ -524,30 +525,79 @@ export default function Index() {
         /* Footer styling */
         .dashboard-footer {
           margin-top: 50px;
-          border-top: 1px solid #e1e3e5;
+          border-top: 1px solid #fde68a;
           padding-top: 20px;
           display: flex;
           justify-content: space-between;
           align-items: center;
           font-size: 13px;
-          color: #6d7175;
+          color: #b45309;
         }
 
         .dashboard-footer a {
-          color: #7c3aed;
+          color: #d97706;
           text-decoration: none;
           font-weight: 500;
           transition: color 0.2s;
         }
 
         .dashboard-footer a:hover {
-          color: #6d28d9;
+          color: #b45309;
         }
 
         .footer-links {
           display: flex;
           align-items: center;
           gap: 10px;
+        }
+
+        /* Mobile Viewport Responsiveness */
+        @media (max-width: 640px) {
+          .dashboard-container {
+            padding: 20px;
+          }
+          
+          .dashboard-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
+            padding-bottom: 16px;
+          }
+
+          .header-left {
+            gap: 12px;
+          }
+
+          .header-title-group h1 {
+            font-size: 18px;
+          }
+
+          .header-right {
+            width: 100%;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+            gap: 10px;
+          }
+
+          .locked-banner {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 16px;
+          }
+
+          .update-link-btn {
+            width: 100%;
+            justify-content: center;
+            box-sizing: border-box;
+          }
+
+          .dashboard-footer {
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+            text-align: center;
+          }
         }
       `}</style>
 

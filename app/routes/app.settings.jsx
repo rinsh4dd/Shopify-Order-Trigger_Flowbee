@@ -178,7 +178,7 @@ export default function Settings() {
         
         .dashboard-container {
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-          background: #f6f8fa;
+          background: #fefdf0;
           min-height: 100vh;
           padding: 30px 40px;
           color: #202223;
@@ -190,7 +190,7 @@ export default function Settings() {
           justify-content: space-between;
           align-items: center;
           margin-bottom: 30px;
-          border-bottom: 1px solid #e1e3e5;
+          border-bottom: 1px solid #fde68a;
           padding-bottom: 20px;
         }
 
@@ -208,13 +208,13 @@ export default function Settings() {
           font-family: 'Plus Jakarta Sans', sans-serif;
           font-size: 22px;
           font-weight: 800;
-          color: #1e1b4b;
+          color: #78350f;
           margin: 0;
         }
 
         .header-title-group p {
           font-size: 13px;
-          color: #6d7175;
+          color: #b45309;
           margin: 4px 0 0 0;
         }
 
@@ -225,13 +225,13 @@ export default function Settings() {
         }
 
         .store-badge {
-          background: #e2e8f0;
-          color: #475569;
+          background: #fef3c7;
+          color: #78350f;
           font-size: 13px;
           font-weight: 600;
           padding: 6px 12px;
           border-radius: 9999px;
-          border: 1px solid #cbd5e1;
+          border: 1px solid #fde68a;
         }
 
         .status-badge {
@@ -288,7 +288,7 @@ export default function Settings() {
 
         .metric-card {
           background: #ffffff;
-          border: 1px solid #e1e3e5;
+          border: 1px solid #fde68a;
           border-radius: 16px;
           padding: 24px;
           display: flex;
@@ -299,8 +299,8 @@ export default function Settings() {
         }
 
         .metric-icon-box {
-          background: #faf5ff;
-          color: #7c3aed;
+          background: #fef3c7;
+          color: #d97706;
           width: 52px;
           height: 52px;
           border-radius: 12px;
@@ -316,14 +316,14 @@ export default function Settings() {
 
         .metric-label {
           font-size: 13px;
-          color: #6d7175;
+          color: #b45309;
           font-weight: 500;
         }
 
         .metric-value {
           font-size: 16px;
           font-weight: 700;
-          color: #1c2434;
+          color: #78350f;
           margin-top: 4px;
         }
 
@@ -349,7 +349,7 @@ export default function Settings() {
         /* Modern Dashboard Card */
         .dash-card {
           background: #ffffff;
-          border: 1px solid #e1e3e5;
+          border: 1px solid #fde68a;
           border-radius: 20px;
           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.01);
           overflow: hidden;
@@ -357,7 +357,7 @@ export default function Settings() {
 
         .dash-card-header {
           padding: 24px 28px;
-          border-bottom: 1px solid #f1f2f4;
+          border-bottom: 1px solid #fef3c7;
           display: flex;
           justify-content: space-between;
           align-items: center;
@@ -367,7 +367,7 @@ export default function Settings() {
           font-family: 'Plus Jakarta Sans', sans-serif;
           font-size: 16px;
           font-weight: 700;
-          color: #1e1b4b;
+          color: #78350f;
           display: flex;
           align-items: center;
           gap: 10px;
@@ -389,7 +389,7 @@ export default function Settings() {
         .field-label {
           font-size: 13.5px;
           font-weight: 600;
-          color: #374151;
+          color: #78350f;
           margin-bottom: 8px;
           display: block;
         }
@@ -409,8 +409,8 @@ export default function Settings() {
         }
 
         .modern-input:focus {
-          border-color: #7c3aed;
-          box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12);
+          border-color: #f59e0b;
+          box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.12);
         }
 
         .api-key-container {
@@ -437,7 +437,7 @@ export default function Settings() {
         }
 
         .api-key-toggle:hover {
-          color: #7c3aed;
+          color: #f59e0b;
         }
 
         .phone-group {
@@ -462,8 +462,8 @@ export default function Settings() {
         }
 
         .country-select:focus {
-          border-color: #7c3aed;
-          box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12);
+          border-color: #f59e0b;
+          box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.12);
         }
 
         .modern-select {
@@ -483,8 +483,8 @@ export default function Settings() {
         }
 
         .modern-select:focus {
-          border-color: #7c3aed;
-          box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12);
+          border-color: #f59e0b;
+          box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.12);
         }
 
         .templates-header {
@@ -497,7 +497,7 @@ export default function Settings() {
         .fetch-button {
           background: #ffffff;
           border: 1px solid #cbd5e1;
-          color: #7c3aed;
+          color: #d97706;
           border-radius: 10px;
           padding: 8px 16px;
           font-size: 13px;
@@ -511,7 +511,7 @@ export default function Settings() {
         }
 
         .fetch-button:hover {
-          border-color: #7c3aed;
+          border-color: #f59e0b;
           background: #fdfaff;
           transform: translateY(-1px);
         }
@@ -555,7 +555,7 @@ export default function Settings() {
         }
 
         .save-button {
-          background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+          background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
           color: #ffffff;
           border: none;
           border-radius: 14px;
@@ -565,13 +565,13 @@ export default function Settings() {
           font-family: inherit;
           cursor: pointer;
           width: 100%;
-          box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15);
+          box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
           transition: all 0.2s ease-in-out;
         }
 
         .save-button:hover {
           transform: translateY(-1px);
-          box-shadow: 0 6px 16px rgba(124, 58, 237, 0.25);
+          box-shadow: 0 6px 16px rgba(245, 158, 11, 0.25);
         }
 
         .save-button:disabled {
@@ -585,8 +585,8 @@ export default function Settings() {
         .spinner {
           width: 16px;
           height: 16px;
-          border: 2px solid rgba(124, 58, 237, 0.2);
-          border-top-color: #7c3aed;
+          border: 2px solid rgba(245, 158, 11, 0.2);
+          border-top-color: #f59e0b;
           border-radius: 50%;
           animation: spin 0.8s linear infinite;
           display: inline-block;
@@ -602,24 +602,24 @@ export default function Settings() {
         /* Footer styling */
         .dashboard-footer {
           margin-top: 50px;
-          border-top: 1px solid #e1e3e5;
+          border-top: 1px solid #fde68a;
           padding-top: 20px;
           display: flex;
           justify-content: space-between;
           align-items: center;
           font-size: 13px;
-          color: #6d7175;
+          color: #b45309;
         }
 
         .dashboard-footer a {
-          color: #7c3aed;
+          color: #d97706;
           text-decoration: none;
           font-weight: 500;
           transition: color 0.2s;
         }
 
         .dashboard-footer a:hover {
-          color: #6d28d9;
+          color: #b45309;
         }
 
         .footer-links {
@@ -642,7 +642,7 @@ export default function Settings() {
           width: 8px;
           height: 8px;
           border-radius: 50%;
-          background: #7c3aed;
+          background: #f59e0b;
           margin-top: 6px;
           flex-shrink: 0;
         }
@@ -703,6 +703,47 @@ export default function Settings() {
         .log-time {
           color: #a0aec0;
           font-size: 11px;
+        }
+
+        /* Mobile Viewport Responsiveness */
+        @media (max-width: 640px) {
+          .dashboard-container {
+            padding: 20px;
+          }
+          
+          .dashboard-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
+            padding-bottom: 16px;
+          }
+
+          .header-left {
+            gap: 12px;
+          }
+
+          .header-title-group h1 {
+            font-size: 18px;
+          }
+
+          .header-right {
+            width: 100%;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+            gap: 10px;
+          }
+
+          .button-group {
+            flex-direction: column;
+            gap: 12px;
+          }
+
+          .dashboard-footer {
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+            text-align: center;
+          }
         }
 
         @keyframes spin {
