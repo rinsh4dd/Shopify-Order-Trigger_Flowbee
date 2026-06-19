@@ -11,6 +11,13 @@ export async function processCheckoutWebhook({ shop, payload, topic }) {
   console.log(`[WEBHOOK] Received checkout event: ${topic} for shop: ${shop}`);
   logToFile(payload, "checkouts.log");
 
+  try {
+    await saveCheckoutRecord("last_debug_payload", { rawPayload: payload });
+    console.log("[WEBHOOK] Saved last raw payload to Firestore checkouts/last_debug_payload for debugging.");
+  } catch (err) {
+    console.error("[WEBHOOK] Failed to save debug payload to Firestore:", err.message);
+  }
+
   const checkoutId = payload.id || payload.cart_token;
   if (!checkoutId) {
     console.log("[WEBHOOK] No checkout ID or cart token found in payload.");
