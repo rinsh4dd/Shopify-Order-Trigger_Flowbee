@@ -3,9 +3,9 @@ import { processCheckoutWebhook } from "../features/orders/checkout-notification
 
 export async function action({ request }) {
   try {
-    const { shop, payload, topic } = await authenticate.webhook(request);
+    const { shop, payload, topic, admin } = await authenticate.webhook(request);
 
-    await processCheckoutWebhook({ shop, payload, topic });
+    await processCheckoutWebhook({ shop, payload, topic, admin });
     return new Response("ok");
   } catch (error) {
     console.error("[WEBHOOK] HMAC signature validation failed for checkout:", error.message);

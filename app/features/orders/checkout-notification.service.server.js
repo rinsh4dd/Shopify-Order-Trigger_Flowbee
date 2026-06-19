@@ -7,7 +7,7 @@ import { sendFlowbeeTemplateMessage } from "../flowbee/flowbee-api.server";
 
 import { logToFile } from "../../utils/logger.server";
 
-export async function processCheckoutWebhook({ shop, payload, topic }) {
+export async function processCheckoutWebhook({ shop, payload, topic, admin }) {
   console.log(`[WEBHOOK] Received checkout event: ${topic} for shop: ${shop}`);
   logToFile(payload, "checkouts.log");
 
@@ -24,7 +24,27 @@ export async function processCheckoutWebhook({ shop, payload, topic }) {
     return;
   }
 
-  const phone = payload.phone || payload.customer?.phone || payload.shipping_address?.phone || payload.billing_address?.phone;
+  let phone = payload.phone || payload.customer?.phone || payload.shipping_address?.phone || payload.billing_address?.phone;
+
+  // Fallback: If no phone in payload, but customer ID exists, query customer profile via Admin API
+  if (!phone && payload.customer?.id && admin) {
+    try {
+      console.log(`[WEBHOOK] Phone missing in payload for checkout ${checkoutId}. Querying Shopify Admin API for Customer ID: ${payload.customer.id}`);
+      const customer = await admin.rest.resources.Customer.find({
+        session: admin.session,
+        id: payload.customer.id,
+      });
+      if (customer && customer.phone) {
+        phone = customer.phone;
+        console.log(`[WEBHOOK] Successfully retrieved customer phone from profile REST API: ${phone}`);
+      } else {
+        console.log(`[WEBHOOK] Customer profile REST API query returned no phone number for ID: ${payload.customer.id}`);
+      }
+    } catch (err) {
+      console.error(`[WEBHOOK] Failed to fetch customer profile phone via Admin API:`, err.message);
+    }
+  }
+
   if (!phone) {
     console.log(`[WEBHOOK] Checkout ${checkoutId} has no customer phone number. Skipping notification.`);
     console.log("[DEBUG] Payload phone keys:", {
