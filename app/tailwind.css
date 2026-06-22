@@ -1,0 +1,41 @@
+/* Google Fonts for Flowbee branding */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@import "tailwindcss";
+
+/* Custom theme tokens */
+@theme {
+  --color-flowbee-50: #fefdf0;
+  --color-flowbee-100: #fef3c7;
+  --color-flowbee-200: #fde68a;
+  --color-flowbee-300: #fcd34d;
+  --color-flowbee-400: #fbbf24;
+  --color-flowbee-500: #f59e0b;
+  --color-flowbee-600: #d97706;
+  --color-flowbee-700: #b45309;
+  --color-flowbee-800: #92400e;
+  --color-flowbee-900: #78350f;
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* Pulse animation for status dots */
+@keyframes pulse-dot {
+  0% { transform: scale(0.9); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.5; }
+  100% { transform: scale(0.9); opacity: 1; }
+}
+
+@utility animate-pulse-dot {
+  animation: pulse-dot 2s infinite;
+}
+
+/* Spinner animation */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@utility animate-spin-fast {
+  animation: spin 0.8s linear infinite;
+}

@@ -72,776 +72,176 @@ export default function Index() {
   const activeTemplateOrderCreated = settings?.flowbeeTemplateOrderCreated || settings?.flowbeeTemplateId;
 
   return (
-    <div className="dashboard-container">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
-        
-        .dashboard-container {
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-          background: #fefdf0;
-          min-height: 100vh;
-          padding: 30px 40px;
-          color: #202223;
-          box-sizing: border-box;
-        }
-
-        .dashboard-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 30px;
-          border-bottom: 1px solid #fde68a;
-          padding-bottom: 20px;
-        }
-
-        .header-left {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-        }
-
-        .logo-img {
-          height: 38px;
-        }
-
-        .header-title-group h1 {
-          font-family: 'Plus Jakarta Sans', sans-serif;
-          font-size: 22px;
-          font-weight: 800;
-          color: #78350f;
-          margin: 0;
-        }
-
-        .header-title-group p {
-          font-size: 13px;
-          color: #b45309;
-          margin: 4px 0 0 0;
-        }
-
-        .header-right {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }
-
-        .store-badge {
-          background: #fef3c7;
-          color: #78350f;
-          font-size: 13px;
-          font-weight: 600;
-          padding: 6px 12px;
-          border-radius: 9999px;
-          border: 1px solid #fde68a;
-        }
-
-        .status-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          font-size: 13px;
-          font-weight: 600;
-          padding: 6px 14px;
-          border-radius: 9999px;
-        }
-
-        .status-badge.connected {
-          background: #d1fae5;
-          color: #065f46;
-          border: 1px solid #a7f3d0;
-        }
-
-        .status-badge.disconnected {
-          background: #fee2e2;
-          color: #991b1b;
-          border: 1px solid #fca5a5;
-        }
-
-        .status-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          display: inline-block;
-          animation: pulse 2s infinite;
-        }
-
-        .status-badge.connected .status-dot {
-          background-color: #10b981;
-        }
-
-        .status-badge.disconnected .status-dot {
-          background-color: #ef4444;
-        }
-
-        @keyframes pulse {
-          0% { transform: scale(0.9); opacity: 1; }
-          50% { transform: scale(1.2); opacity: 0.5; }
-          100% { transform: scale(0.9); opacity: 1; }
-        }
-
-        /* Metrics grid */
-        .metrics-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-          gap: 20px;
-          margin-bottom: 30px;
-        }
-
-        .metric-card {
-          background: #ffffff;
-          border: 1px solid #fde68a;
-          border-radius: 16px;
-          padding: 24px;
-          display: flex;
-          align-items: center;
-          gap: 20px;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.01);
-          transition: all 0.2s;
-        }
-
-        .metric-card:hover {
-          box-shadow: 0 10px 15px -3px rgba(245, 158, 11, 0.05);
-          border-color: #f59e0b;
-          transform: translateY(-2px);
-        }
-
-        .metric-icon-box {
-          background: #fef3c7;
-          color: #d97706;
-          width: 52px;
-          height: 52px;
-          border-radius: 12px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .metric-details {
-          display: flex;
-          flex-direction: column;
-        }
-
-        .metric-label {
-          font-size: 13px;
-          color: #b45309;
-          font-weight: 500;
-        }
-
-        .metric-value {
-          font-size: 16px;
-          font-weight: 700;
-          color: #78350f;
-          margin-top: 4px;
-        }
-
-        /* Two column layout */
-        .dashboard-content-layout {
-          display: grid;
-          grid-template-columns: 2fr 1fr;
-          gap: 30px;
-        }
-
-        @media (max-width: 1024px) {
-          .dashboard-content-layout {
-            grid-template-columns: 1fr;
-          }
-        }
-
-        .dashboard-column {
-          display: flex;
-          flex-direction: column;
-          gap: 24px;
-        }
-
-        /* Modern Dashboard Card */
-        .dash-card {
-          background: #ffffff;
-          border: 1px solid #fde68a;
-          border-radius: 20px;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.01);
-          overflow: hidden;
-        }
-
-        .dash-card-header {
-          padding: 24px 28px;
-          border-bottom: 1px solid #fef3c7;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          background: #ffffff;
-        }
-
-        .dash-card-title {
-          font-family: 'Plus Jakarta Sans', sans-serif;
-          font-size: 16px;
-          font-weight: 700;
-          color: #78350f;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          margin: 0;
-        }
-
-        .dash-card-body {
-          padding: 28px;
-        }
-
-        /* Automation Item Row */
-        .automation-item {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 16px 20px;
-          border-radius: 12px;
-          border: 1px solid #fef3c7;
-          background: #fafafa;
-          margin-bottom: 14px;
-          transition: all 0.2s;
-        }
-
-        .automation-item:last-child {
-          margin-bottom: 0;
-        }
-
-        .automation-item:hover {
-          border-color: #f59e0b;
-          background: #fefdf0;
-        }
-
-        .automation-info {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-        }
-
-        .automation-icon-indicator {
-          width: 40px;
-          height: 40px;
-          border-radius: 10px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .automation-icon-indicator.enabled {
-          background: #ecfdf5;
-          color: #059669;
-        }
-
-        .automation-icon-indicator.disabled {
-          background: #f3f4f6;
-          color: #6b7280;
-        }
-
-        .automation-name {
-          font-size: 14px;
-          font-weight: 600;
-          color: #1c2434;
-        }
-
-        .automation-template-id {
-          font-size: 12px;
-          color: #6d7175;
-          margin-top: 2px;
-        }
-
-        .automation-status-tag {
-          font-size: 12px;
-          font-weight: 600;
-          padding: 4px 10px;
-          border-radius: 9999px;
-        }
-
-        .automation-status-tag.enabled {
-          background: #d1fae5;
-          color: #065f46;
-        }
-
-        .automation-status-tag.disabled {
-          background: #f3f4f6;
-          color: #4b5563;
-        }
-
-        /* General Info Row */
-        .info-row {
-          display: flex;
-          justify-content: space-between;
-          border-bottom: 1px solid #fef3c7;
-          padding: 14px 0;
-        }
-
-        .info-row:last-child {
-          border-bottom: none;
-          padding-bottom: 0;
-        }
-
-        .info-label {
-          font-size: 13.5px;
-          color: #4b5563;
-          font-weight: 500;
-        }
-
-        .info-value {
-          font-size: 13.5px;
-          font-weight: 600;
-          color: #1c2434;
-        }
-
-        /* Action bar */
-        .locked-banner {
-          background: #ffffff;
-          border: 1px solid #fde68a;
-          border-radius: 16px;
-          padding: 16px 24px;
-          margin-bottom: 24px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          box-shadow: 0 4px 12px rgba(245, 158, 11, 0.02);
-          box-sizing: border-box;
-          width: 100%;
-        }
-
-        .banner-left {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-        }
-
-        .banner-content strong {
-          color: #78350f;
-          font-size: 14.5px;
-          font-weight: 700;
-          display: block;
-        }
-
-        .banner-content p {
-          color: #b45309;
-          font-size: 13px;
-          margin: 4px 0 0 0;
-        }
-
-        .update-link-btn {
-          background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-          color: #ffffff !important;
-          text-decoration: none;
-          padding: 10px 22px;
-          border-radius: 12px;
-          font-size: 13.5px;
-          font-weight: 700;
-          transition: all 0.2s;
-          white-space: nowrap;
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          box-shadow: 0 4px 10px rgba(245, 158, 11, 0.15);
-        }
-
-        .update-link-btn:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 6px 14px rgba(245, 158, 11, 0.22);
-        }
-
-        /* Side column widgets */
-        .widget-item {
-          display: flex;
-          gap: 12px;
-          margin-bottom: 16px;
-        }
-
-        .widget-item:last-child {
-          margin-bottom: 0;
-        }
-
-        .widget-dot-indicator {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          background: #f59e0b;
-          margin-top: 6px;
-          flex-shrink: 0;
-        }
-
-        .widget-text h4 {
-          font-size: 13.5px;
-          font-weight: 600;
-          color: #1c2434;
-          margin: 0;
-        }
-
-        .widget-text p {
-          font-size: 12.5px;
-          color: #6b7280;
-          margin: 4px 0 0 0;
-          line-height: 1.4;
-        }
-
-        /* Simulated logs list */
-        .logs-list {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        }
-
-        .log-item {
-          padding: 12px;
-          border-radius: 10px;
-          background: #fafafa;
-          border: 1px solid #f1f2f4;
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          font-size: 12px;
-        }
-
-        .log-badge {
-          font-weight: 700;
-          font-size: 10px;
-          padding: 2px 6px;
-          border-radius: 4px;
-          text-transform: uppercase;
-        }
-
-        .log-badge.success {
-          background: #e6fcf5;
-          color: #0ca678;
-        }
-
-        .log-badge.failed {
-          background: #fff0f0;
-          color: #e03131;
-        }
-
-        .log-badge.pending {
-          background: #fff9db;
-          color: #e67700;
-        }
-
-        .log-badge.info {
-          background: #e7f5ff;
-          color: #1c7ed6;
-        }
-
-        .log-info {
-          flex-grow: 1;
-        }
-
-        .log-time {
-          color: #a0aec0;
-          font-size: 11px;
-        }
-
-        /* Footer styling */
-        .dashboard-footer {
-          margin-top: 50px;
-          border-top: 1px solid #fde68a;
-          padding-top: 20px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          font-size: 13px;
-          color: #b45309;
-        }
-
-        .dashboard-footer a {
-          color: #d97706;
-          text-decoration: none;
-          font-weight: 500;
-          transition: color 0.2s;
-        }
-
-        .dashboard-footer a:hover {
-          color: #b45309;
-        }
-
-        .footer-links {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
-
-        /* Mobile Viewport Responsiveness */
-        @media (max-width: 640px) {
-          .dashboard-container {
-            padding: 20px;
-          }
-          
-          .dashboard-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 16px;
-            padding-bottom: 16px;
-          }
-
-          .header-left {
-            gap: 12px;
-          }
-
-          .header-title-group h1 {
-            font-size: 18px;
-          }
-
-          .header-right {
-            width: 100%;
-            justify-content: flex-start;
-            flex-wrap: wrap;
-            gap: 10px;
-          }
-
-          .locked-banner {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 16px;
-            padding: 16px;
-          }
-
-          .update-link-btn {
-            width: 100%;
-            justify-content: center;
-            box-sizing: border-box;
-          }
-
-          .dashboard-footer {
-            flex-direction: column;
-            gap: 12px;
-            align-items: center;
-            text-align: center;
-          }
-        }
-      `}</style>
-
+    <div className="font-sans bg-flowbee-50 min-h-screen px-10 py-8 text-gray-900 box-border max-md:px-5">
       {/* Top Header */}
-      <div className="dashboard-header">
-        <div className="header-left">
-          <img src="https://app.flowbee.io/svg/brand-logos/logo-flowbee-secondary.svg" alt="Flowbee" className="logo-img" />
-          <div className="header-title-group">
-            <h1>Flowbee WhatsApp Notifications</h1>
-            <p>Monitor connection status, order event automations, and recovery templates.</p>
+      <div className="flex justify-between items-center mb-8 border-b border-flowbee-200 pb-5 max-sm:flex-col max-sm:items-start max-sm:gap-4 max-sm:pb-4">
+        <div className="flex items-center gap-4 max-sm:gap-3">
+          <img src="https://app.flowbee.io/svg/brand-logos/logo-flowbee-secondary.svg" alt="Flowbee" className="h-[38px]" />
+          <div>
+            <h1 className="font-display text-[22px] font-extrabold text-flowbee-900 m-0 max-sm:text-lg">Flowbee WhatsApp Notifications</h1>
+            <p className="text-[13px] text-flowbee-700 mt-1 m-0">Monitor connection status, order event automations, and recovery templates.</p>
           </div>
         </div>
 
-        <div className="header-right">
-          <span className="store-badge">{shop}</span>
-          <span className={`status-badge ${isConnected ? "connected" : "disconnected"}`}>
-            <span className="status-dot"></span>
+        <div className="flex items-center gap-3 max-sm:w-full max-sm:justify-start max-sm:flex-wrap max-sm:gap-2.5">
+          <span className="bg-flowbee-100 text-flowbee-900 text-[13px] font-semibold px-3 py-1.5 rounded-full border border-flowbee-200">{shop}</span>
+          <span className={`inline-flex items-center gap-2 text-[13px] font-semibold px-3.5 py-1.5 rounded-full ${isConnected ? "bg-emerald-100 text-emerald-800 border border-emerald-200" : "bg-red-100 text-red-800 border border-red-300"}`}>
+            <span className={`w-2 h-2 rounded-full inline-block animate-pulse-dot ${isConnected ? "bg-emerald-500" : "bg-red-500"}`}></span>
             {isConnected ? "API Connected" : "API Disconnected"}
           </span>
         </div>
       </div>
 
       {/* Action banner */}
-      <div className="locked-banner">
-        <div className="banner-left">
+      <div className="bg-white border border-flowbee-200 rounded-2xl px-6 py-4 mb-6 flex items-center justify-between shadow-[0_4px_12px_rgba(245,158,11,0.02)] w-full box-border max-sm:flex-col max-sm:items-start max-sm:gap-4 max-sm:p-4">
+        <div className="flex items-center gap-4">
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-          <div className="banner-content">
-            <strong>Configurations Overview</strong>
-            <p>These are the settings currently live in your Shopify store database. Click Edit below to modify API credentials, numbers, or templates.</p>
+          <div>
+            <strong className="text-flowbee-900 text-[14.5px] font-bold block">Configurations Overview</strong>
+            <p className="text-flowbee-700 text-[13px] mt-1 m-0">These are the settings currently live in your Shopify store database. Click Edit below to modify API credentials, numbers, or templates.</p>
           </div>
         </div>
-        <Link to="/app/settings" className="update-link-btn">
+        <Link to="/app/settings" className="bg-gradient-to-br from-flowbee-500 to-flowbee-600 text-white! no-underline px-5.5 py-2.5 rounded-xl text-[13.5px] font-bold transition-all whitespace-nowrap inline-flex items-center gap-2 shadow-[0_4px_10px_rgba(245,158,11,0.15)] hover:-translate-y-px hover:shadow-[0_6px_14px_rgba(245,158,11,0.22)] max-sm:w-full max-sm:justify-center max-sm:box-border">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="16 3 21 8 8 21 3 21 3 16 16 3"></polygon></svg>
           Edit Configurations
         </Link>
       </div>
 
       {/* Metrics Row */}
-      <div className="metrics-grid">
-        <div className="metric-card">
-          <div className="metric-icon-box">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-5 mb-8">
+        <div className="bg-white border border-flowbee-200 rounded-2xl p-6 flex items-center gap-5 shadow-[0_4px_6px_rgba(0,0,0,0.01)] transition-all hover:shadow-[0_10px_15px_-3px_rgba(245,158,11,0.05)] hover:border-flowbee-500 hover:-translate-y-0.5">
+          <div className="bg-flowbee-100 text-flowbee-600 w-13 h-13 rounded-xl flex items-center justify-center">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
           </div>
-          <div className="metric-details">
-            <span className="metric-label">WhatsApp Sender</span>
-            <span className="metric-value">{formatPhone(settings?.flowbeeRegisteredPhone)}</span>
+          <div className="flex flex-col">
+            <span className="text-[13px] text-flowbee-700 font-medium">WhatsApp Sender</span>
+            <span className="text-base font-bold text-flowbee-900 mt-1">{formatPhone(settings?.flowbeeRegisteredPhone)}</span>
           </div>
         </div>
 
-        <div className="metric-card">
-          <div className="metric-icon-box" style={{ background: '#f0fdf4', color: '#16a34a' }}>
+        <div className="bg-white border border-flowbee-200 rounded-2xl p-6 flex items-center gap-5 shadow-[0_4px_6px_rgba(0,0,0,0.01)] transition-all hover:shadow-[0_10px_15px_-3px_rgba(245,158,11,0.05)] hover:border-flowbee-500 hover:-translate-y-0.5">
+          <div className="bg-green-50 text-green-600 w-13 h-13 rounded-xl flex items-center justify-center">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
           </div>
-          <div className="metric-details">
-            <span className="metric-label">Admin Recipient</span>
-            <span className="metric-value">{formatPhone(settings?.flowbeeNotifyPhone)}</span>
+          <div className="flex flex-col">
+            <span className="text-[13px] text-flowbee-700 font-medium">Admin Recipient</span>
+            <span className="text-base font-bold text-flowbee-900 mt-1">{formatPhone(settings?.flowbeeNotifyPhone)}</span>
           </div>
         </div>
 
-        <div className="metric-card">
-          <div className="metric-icon-box" style={{ background: '#eff6ff', color: '#2563eb' }}>
+        <div className="bg-white border border-flowbee-200 rounded-2xl p-6 flex items-center gap-5 shadow-[0_4px_6px_rgba(0,0,0,0.01)] transition-all hover:shadow-[0_10px_15px_-3px_rgba(245,158,11,0.05)] hover:border-flowbee-500 hover:-translate-y-0.5">
+          <div className="bg-blue-50 text-blue-600 w-13 h-13 rounded-xl flex items-center justify-center">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           </div>
-          <div className="metric-details">
-            <span className="metric-label">Cart Recovery Delay</span>
-            <span className="metric-value">{formatDelay(settings?.flowbeeAbandonedCartDelay)}</span>
+          <div className="flex flex-col">
+            <span className="text-[13px] text-flowbee-700 font-medium">Cart Recovery Delay</span>
+            <span className="text-base font-bold text-flowbee-900 mt-1">{formatDelay(settings?.flowbeeAbandonedCartDelay)}</span>
           </div>
         </div>
       </div>
 
       {/* Main 2-Column Grid */}
-      <div className="dashboard-content-layout">
+      <div className="grid grid-cols-[2fr_1fr] gap-8 max-lg:grid-cols-1">
         {/* Left Column (Automations & Recovery Info) */}
-        <div className="dashboard-column">
+        <div className="flex flex-col gap-6">
           {/* Section: Shopify Order Events */}
-          <div className="dash-card">
-            <div className="dash-card-header">
-              <h2 className="dash-card-title">
+          <div className="bg-white border border-flowbee-200 rounded-[20px] shadow-[0_4px_6px_rgba(0,0,0,0.01)] overflow-hidden">
+            <div className="px-7 py-6 border-b border-flowbee-100 flex justify-between items-center bg-white">
+              <h2 className="font-display text-base font-bold text-flowbee-900 flex items-center gap-2.5 m-0">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="9"></line><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="11" y2="17"></line></svg>
                 Shopify Order Automations
               </h2>
             </div>
-            <div className="dash-card-body">
+            <div className="p-7">
               {/* Order Created */}
-              <div className="automation-item">
-                <div className="automation-info">
-                  <div className={`automation-icon-indicator ${activeTemplateOrderCreated ? "enabled" : "disabled"}`}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
-                  </div>
-                  <div>
-                    <div className="automation-name">Order Created Notification (Admin)</div>
-                    <div className="automation-template-id">
-                      {activeTemplateOrderCreated ? `Template ID: ${activeTemplateOrderCreated}` : "No template configured"}
-                    </div>
-                  </div>
-                </div>
-                <span className={`automation-status-tag ${activeTemplateOrderCreated ? "enabled" : "disabled"}`}>
-                  {activeTemplateOrderCreated ? "Active" : "Disabled"}
-                </span>
-              </div>
-
+              <AutomationRow
+                label="Order Created Notification (Admin)"
+                templateId={activeTemplateOrderCreated}
+                icon={<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>}
+              />
               {/* Order Paid */}
-              <div className="automation-item">
-                <div className="automation-info">
-                  <div className={`automation-icon-indicator ${settings?.flowbeeTemplateOrderPaid ? "enabled" : "disabled"}`}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-                  </div>
-                  <div>
-                    <div className="automation-name">Order Paid Notification (Admin)</div>
-                    <div className="automation-template-id">
-                      {settings?.flowbeeTemplateOrderPaid ? `Template ID: ${settings.flowbeeTemplateOrderPaid}` : "No template configured"}
-                    </div>
-                  </div>
-                </div>
-                <span className={`automation-status-tag ${settings?.flowbeeTemplateOrderPaid ? "enabled" : "disabled"}`}>
-                  {settings?.flowbeeTemplateOrderPaid ? "Active" : "Disabled"}
-                </span>
-              </div>
-
+              <AutomationRow
+                label="Order Paid Notification (Admin)"
+                templateId={settings?.flowbeeTemplateOrderPaid}
+                icon={<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>}
+              />
               {/* Order Fulfilled */}
-              <div className="automation-item">
-                <div className="automation-info">
-                  <div className={`automation-icon-indicator ${settings?.flowbeeTemplateOrderFulfilled ? "enabled" : "disabled"}`}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-                  </div>
-                  <div>
-                    <div className="automation-name">Order Fulfilled Notification (Admin)</div>
-                    <div className="automation-template-id">
-                      {settings?.flowbeeTemplateOrderFulfilled ? `Template ID: ${settings.flowbeeTemplateOrderFulfilled}` : "No template configured"}
-                    </div>
-                  </div>
-                </div>
-                <span className={`automation-status-tag ${settings?.flowbeeTemplateOrderFulfilled ? "enabled" : "disabled"}`}>
-                  {settings?.flowbeeTemplateOrderFulfilled ? "Active" : "Disabled"}
-                </span>
-              </div>
-
+              <AutomationRow
+                label="Order Fulfilled Notification (Admin)"
+                templateId={settings?.flowbeeTemplateOrderFulfilled}
+                icon={<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>}
+              />
               {/* Order Cancelled */}
-              <div className="automation-item">
-                <div className="automation-info">
-                  <div className={`automation-icon-indicator ${settings?.flowbeeTemplateOrderCancelled ? "enabled" : "disabled"}`}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
-                  </div>
-                  <div>
-                    <div className="automation-name">Order Cancelled Notification (Admin)</div>
-                    <div className="automation-template-id">
-                      {settings?.flowbeeTemplateOrderCancelled ? `Template ID: ${settings.flowbeeTemplateOrderCancelled}` : "No template configured"}
-                    </div>
-                  </div>
-                </div>
-                <span className={`automation-status-tag ${settings?.flowbeeTemplateOrderCancelled ? "enabled" : "disabled"}`}>
-                  {settings?.flowbeeTemplateOrderCancelled ? "Active" : "Disabled"}
-                </span>
-              </div>
+              <AutomationRow
+                label="Order Cancelled Notification (Admin)"
+                templateId={settings?.flowbeeTemplateOrderCancelled}
+                icon={<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>}
+                isLast
+              />
             </div>
           </div>
 
           {/* Section: Abandoned Checkout Settings */}
-          <div className="dash-card">
-            <div className="dash-card-header">
-              <h2 className="dash-card-title">
+          <div className="bg-white border border-flowbee-200 rounded-[20px] shadow-[0_4px_6px_rgba(0,0,0,0.01)] overflow-hidden">
+            <div className="px-7 py-6 border-b border-flowbee-100 flex justify-between items-center">
+              <h2 className="font-display text-base font-bold text-flowbee-900 flex items-center gap-2.5 m-0">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
                 Abandoned Cart Recovery Details
               </h2>
             </div>
-            <div className="dash-card-body">
-              <div className="info-row">
-                <span className="info-label">Recovery Template ID</span>
-                <span className="info-value">{settings?.flowbeeTemplateAbandonedCart || "Not configured"}</span>
+            <div className="p-7">
+              <div className="flex justify-between border-b border-flowbee-100 py-3.5">
+                <span className="text-[13.5px] text-gray-600 font-medium">Recovery Template ID</span>
+                <span className="text-[13.5px] font-semibold text-gray-800">{settings?.flowbeeTemplateAbandonedCart || "Not configured"}</span>
               </div>
-              <div className="info-row">
-                <span className="info-label">Recovery Schedule</span>
-                <span className="info-value">Send recovery message after {formatDelay(settings?.flowbeeAbandonedCartDelay)}</span>
+              <div className="flex justify-between py-3.5">
+                <span className="text-[13.5px] text-gray-600 font-medium">Recovery Schedule</span>
+                <span className="text-[13.5px] font-semibold text-gray-800">Send recovery message after {formatDelay(settings?.flowbeeAbandonedCartDelay)}</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Right Column (Widget / Help column) */}
-        <div className="dashboard-column">
+        <div className="flex flex-col gap-6">
           {/* Quick Guide */}
-          <div className="dash-card">
-            <div className="dash-card-header">
-              <h2 className="dash-card-title">Setup & Help Checklist</h2>
+          <div className="bg-white border border-flowbee-200 rounded-[20px] shadow-[0_4px_6px_rgba(0,0,0,0.01)] overflow-hidden">
+            <div className="px-7 py-6 border-b border-flowbee-100 flex justify-between items-center">
+              <h2 className="font-display text-base font-bold text-flowbee-900 flex items-center gap-2.5 m-0">Setup & Help Checklist</h2>
             </div>
-            <div className="dash-card-body" style={{ padding: '24px' }}>
-              <div className="widget-item">
-                <div className="widget-dot-indicator"></div>
-                <div className="widget-text">
-                  <h4>Get Flowbee API Key</h4>
-                  <p>Obtain your secret API key from the Flowbee API platform under Settings.</p>
-                </div>
-              </div>
-              <div className="widget-item">
-                <div className="widget-dot-indicator"></div>
-                <div className="widget-text">
-                  <h4>Register WhatsApp Number</h4>
-                  <p>Specify the sender phone number associated with your WhatsApp business profile.</p>
-                </div>
-              </div>
-              <div className="widget-item">
-                <div className="widget-dot-indicator"></div>
-                <div className="widget-text">
-                  <h4>Select Approved Templates</h4>
-                  <p>Choose WhatsApp-approved notification templates for order logs and recovering checkouts.</p>
-                </div>
-              </div>
+            <div className="p-6">
+              <WidgetItem title="Get Flowbee API Key" description="Obtain your secret API key from the Flowbee API platform under Settings." />
+              <WidgetItem title="Register WhatsApp Number" description="Specify the sender phone number associated with your WhatsApp business profile." />
+              <WidgetItem title="Select Approved Templates" description="Choose WhatsApp-approved notification templates for order logs and recovering checkouts." isLast />
             </div>
           </div>
 
           {/* Real Activity Monitor */}
-          <div className="dash-card">
-            <div className="dash-card-header">
-              <h2 className="dash-card-title">Activity Monitor</h2>
+          <div className="bg-white border border-flowbee-200 rounded-[20px] shadow-[0_4px_6px_rgba(0,0,0,0.01)] overflow-hidden">
+            <div className="px-7 py-6 border-b border-flowbee-100 flex justify-between items-center">
+              <h2 className="font-display text-base font-bold text-flowbee-900 flex items-center gap-2.5 m-0">Activity Monitor</h2>
             </div>
-            <div className="dash-card-body" style={{ padding: '24px' }}>
-              <div className="logs-list">
+            <div className="p-6">
+              <div className="flex flex-col gap-3">
                 {activityLogs.length === 0 ? (
-                  <div style={{ textAlign: "center", color: "#6b7280", fontSize: "13px", padding: "10px 0" }}>
+                  <div className="text-center text-gray-500 text-[13px] py-2.5">
                     No activity events yet. Events will appear here once orders are placed or abandoned checkouts are detected.
                   </div>
                 ) : (
                   activityLogs.map((log) => {
-                    const badgeClass = log.status === "success" ? "success" : log.status === "failed" ? "failed" : log.status === "pending" ? "pending" : "info";
+                    const badgeClass = log.status === "success" ? "bg-emerald-50 text-emerald-600" : log.status === "failed" ? "bg-red-50 text-red-600" : log.status === "pending" ? "bg-amber-50 text-amber-600" : "bg-blue-50 text-blue-600";
                     const badgeText = log.status === "success" ? "Success" : log.status === "failed" ? "Failed" : log.status === "pending" ? "Pending" : "Info";
-                    
-                    const date = log.createdAt?.toMillis 
-                      ? new Date(log.createdAt.toMillis()) 
+
+                    const date = log.createdAt?.toMillis
+                      ? new Date(log.createdAt.toMillis())
                       : (log.createdAt ? new Date(log.createdAt) : new Date());
-                    
+
                     return (
-                      <div className="log-item" key={log.id}>
-                        <span className={`log-badge ${badgeClass}`}>{badgeText}</span>
-                        <div className="log-info">
+                      <div className="p-3 rounded-[10px] bg-gray-50 border border-gray-100 flex items-center gap-3 text-xs" key={log.id}>
+                        <span className={`font-bold text-[10px] px-1.5 py-0.5 rounded uppercase ${badgeClass}`}>{badgeText}</span>
+                        <div className="grow">
                           <div>{log.title}</div>
-                          <span className="log-time">{log.detail} — {date.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                          <span className="text-gray-400 text-[11px]">{log.detail} — {date.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
                       </div>
                     );
@@ -854,16 +254,52 @@ export default function Index() {
       </div>
 
       {/* Unified Footer */}
-      <footer className="dashboard-footer">
+      <footer className="mt-12 border-t border-flowbee-200 pt-5 flex justify-between items-center text-[13px] text-flowbee-700 max-sm:flex-col max-sm:gap-3 max-sm:items-center max-sm:text-center">
         <p>&copy; {new Date().getFullYear()} Flowbee.io. All rights reserved.</p>
-        <div className="footer-links">
-          <a href="https://flowbee.io" target="_blank" rel="noopener noreferrer">Website</a>
+        <div className="flex items-center gap-2.5">
+          <a href="https://flowbee.io" target="_blank" rel="noopener noreferrer" className="text-flowbee-600 no-underline font-medium transition-colors hover:text-flowbee-700">Website</a>
           <span>&bull;</span>
-          <a href="mailto:support@flowbee.io">Support</a>
+          <a href="mailto:support@flowbee.io" className="text-flowbee-600 no-underline font-medium transition-colors hover:text-flowbee-700">Support</a>
           <span>&bull;</span>
-          <a href="https://flowbee.io/docs" target="_blank" rel="noopener noreferrer">Documentation</a>
+          <a href="https://flowbee.io/docs" target="_blank" rel="noopener noreferrer" className="text-flowbee-600 no-underline font-medium transition-colors hover:text-flowbee-700">Documentation</a>
         </div>
       </footer>
+    </div>
+  );
+}
+
+/* Reusable sub-components */
+
+function AutomationRow({ label, templateId, icon, isLast = false }) {
+  const enabled = !!templateId;
+  return (
+    <div className={`flex justify-between items-center px-5 py-4 rounded-xl border border-flowbee-100 bg-gray-50 transition-all hover:border-flowbee-500 hover:bg-flowbee-50 ${isLast ? "" : "mb-3.5"}`}>
+      <div className="flex items-center gap-3.5">
+        <div className={`w-10 h-10 rounded-[10px] flex items-center justify-center ${enabled ? "bg-emerald-50 text-emerald-600" : "bg-gray-100 text-gray-500"}`}>
+          {icon}
+        </div>
+        <div>
+          <div className="text-sm font-semibold text-gray-800">{label}</div>
+          <div className="text-xs text-gray-500 mt-0.5">
+            {enabled ? `Template ID: ${templateId}` : "No template configured"}
+          </div>
+        </div>
+      </div>
+      <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${enabled ? "bg-emerald-100 text-emerald-800" : "bg-gray-100 text-gray-600"}`}>
+        {enabled ? "Active" : "Disabled"}
+      </span>
+    </div>
+  );
+}
+
+function WidgetItem({ title, description, isLast = false }) {
+  return (
+    <div className={`flex gap-3 ${isLast ? "" : "mb-4"}`}>
+      <div className="w-2 h-2 rounded-full bg-flowbee-500 mt-1.5 shrink-0"></div>
+      <div>
+        <h4 className="text-[13.5px] font-semibold text-gray-800 m-0">{title}</h4>
+        <p className="text-[12.5px] text-gray-500 mt-1 m-0 leading-relaxed">{description}</p>
+      </div>
     </div>
   );
 }
