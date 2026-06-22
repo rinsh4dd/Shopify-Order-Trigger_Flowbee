@@ -182,19 +182,19 @@ export default function Settings() {
   const countryClass = "w-[120px] px-3 py-3 rounded-xl border border-slate-300 bg-slate-50 text-sm font-sans text-slate-800 h-[46px] outline-none cursor-pointer transition-all focus:border-flowbee-500 focus:shadow-[0_0_0_4px_rgba(245,158,11,0.12)]";
 
   return (
-    <div className="font-sans bg-flowbee-50 min-h-screen px-10 py-8 text-gray-900 box-border max-md:px-5">
+    <div className="font-sans bg-slate-50 min-h-screen px-10 py-8 text-slate-900 box-border max-md:px-5">
       {/* Top Header */}
-      <div className="flex justify-between items-center mb-8 border-b border-flowbee-200 pb-5 max-sm:flex-col max-sm:items-start max-sm:gap-4 max-sm:pb-4">
+      <div className="flex justify-between items-center mb-8 border-b border-slate-200 pb-5 max-sm:flex-col max-sm:items-start max-sm:gap-4 max-sm:pb-4">
         <div className="flex items-center gap-4 max-sm:gap-3">
           <img src="https://app.flowbee.io/svg/brand-logos/logo-flowbee-secondary.svg" alt="Flowbee" className="h-[38px]" />
           <div>
-            <h1 className="font-display text-[22px] font-extrabold text-flowbee-900 m-0 max-sm:text-lg">Update Configurations</h1>
-            <p className="text-[13px] text-flowbee-700 mt-1 m-0">Modify templates and automatic customer notifications</p>
+            <h1 className="font-display text-[22px] font-extrabold text-slate-900 m-0 max-sm:text-lg">Update Configurations</h1>
+            <p className="text-[13px] text-slate-500 mt-1 m-0">Modify templates and automatic customer notifications</p>
           </div>
         </div>
 
         <div className="flex items-center gap-3 max-sm:w-full max-sm:justify-start max-sm:flex-wrap max-sm:gap-2.5">
-          <span className="bg-flowbee-100 text-flowbee-900 text-[13px] font-semibold px-3 py-1.5 rounded-full border border-flowbee-200">{shop}</span>
+          <span className="bg-white text-slate-700 text-[13px] font-medium px-3.5 py-1.5 rounded-full border border-slate-200 shadow-sm">{shop}</span>
           <span className={`inline-flex items-center gap-2 text-[13px] font-semibold px-3.5 py-1.5 rounded-full ${isConnected ? "bg-emerald-100 text-emerald-800 border border-emerald-200" : "bg-red-100 text-red-800 border border-red-300"}`}>
             <span className={`w-2 h-2 rounded-full inline-block animate-pulse-dot ${isConnected ? "bg-emerald-500" : "bg-red-500"}`}></span>
             {isConnected ? "API Connected" : "API Disconnected"}
@@ -205,16 +205,16 @@ export default function Settings() {
       {/* Metrics Row */}
       <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-5 mb-8">
         <MetricCard label="WhatsApp Sender" value={formatPhone(settings?.flowbeeRegisteredPhone)}
-          icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>}
-          iconBg="bg-flowbee-100" iconColor="text-flowbee-600"
+          icon={<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>}
+          iconBg="bg-orange-50 border border-orange-100" iconColor="text-orange-600"
         />
         <MetricCard label="Admin Recipient" value={formatPhone(settings?.flowbeeNotifyPhone)}
-          icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>}
-          iconBg="bg-green-50" iconColor="text-green-600"
+          icon={<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>}
+          iconBg="bg-emerald-50 border border-emerald-100" iconColor="text-emerald-600"
         />
         <MetricCard label="Cart Recovery Delay" value={formatDelay(settings?.flowbeeAbandonedCartDelay)}
-          icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>}
-          iconBg="bg-blue-50" iconColor="text-blue-600"
+          icon={<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>}
+          iconBg="bg-sky-50 border border-sky-100" iconColor="text-sky-600"
         />
       </div>
 
@@ -274,14 +274,14 @@ export default function Settings() {
             </Card>
 
             {/* Section 3: Templates */}
-            <div className="bg-white border border-flowbee-200 rounded-[20px] shadow-[0_4px_6px_rgba(0,0,0,0.01)] overflow-hidden">
-              <div className="px-7 py-6 border-b border-flowbee-100 flex justify-between items-center">
-                <h2 className="font-display text-base font-bold text-flowbee-900 flex items-center gap-2.5 m-0">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="9"></line><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="11" y2="17"></line></svg>
+            <div className="bg-white border border-slate-200/60 rounded-2xl shadow-sm overflow-hidden">
+              <div className="px-7 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <h2 className="font-display text-[15px] font-semibold text-slate-800 flex items-center gap-2 m-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="9"></line><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="11" y2="17"></line></svg>
                   WhatsApp Templates
                 </h2>
-                <button type="button" className="bg-white border border-slate-300 text-flowbee-600 rounded-[10px] px-4 py-2 text-[13px] font-semibold font-sans cursor-pointer flex items-center gap-1.5 transition-all hover:border-flowbee-500 hover:bg-purple-50 hover:-translate-y-px disabled:bg-gray-100 disabled:border-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed disabled:translate-y-0" onClick={handleFetch} disabled={isFetching}>
-                  {isFetching ? <span className="w-4 h-4 border-2 border-flowbee-500/20 border-t-flowbee-500 rounded-full inline-block animate-spin-fast"></span> : null}
+                <button type="button" className="bg-white border border-slate-200 text-slate-700 rounded-lg px-4 py-2 text-sm font-medium cursor-pointer flex items-center gap-2 transition-all hover:bg-slate-50 hover:border-slate-300 shadow-sm disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2" onClick={handleFetch} disabled={isFetching}>
+                  {isFetching ? <span className="w-3.5 h-3.5 border-2 border-slate-300 border-t-slate-700 rounded-full inline-block animate-spin-fast"></span> : null}
                   {isFetching ? "Loading..." : "Sync Templates"}
                 </button>
               </div>
@@ -294,7 +294,7 @@ export default function Settings() {
             </div>
 
             {/* Section 4: Abandoned Cart */}
-            <Card title="Abandoned Cart Recovery" icon={<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>}>
+            <Card title="Abandoned Cart Recovery" icon={<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>}>
               <TemplateSelect label="Recovery Template" name="flowbeeTemplateAbandonedCart" value={selAbandonedCart} onChange={setSelAbandonedCart} templateList={templateList} selectClass={selectClass} />
               <FieldGroup label="Recovery Message Delay">
                 <select className={selectClass} name="flowbeeAbandonedCartDelay" defaultValue={settings?.flowbeeAbandonedCartDelay || "1800"}>
@@ -310,32 +310,33 @@ export default function Settings() {
 
             {/* Actions Form */}
             <div className="flex gap-4 mt-1 w-full max-sm:flex-col max-sm:gap-3">
-              <Link to="/app" className="bg-white border border-slate-300 text-slate-600 rounded-[14px] px-6 py-3.5 text-[15px] font-bold font-sans no-underline text-center block w-full box-border transition-all hover:bg-slate-50 hover:border-slate-400 hover:-translate-y-px">Cancel</Link>
+              <Link to="/app" className="bg-white border border-slate-200 text-slate-700 rounded-lg px-6 py-3 text-sm font-medium no-underline text-center block w-full box-border transition-all shadow-sm hover:bg-slate-50 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2">Cancel</Link>
               <button
-                className="bg-gradient-to-br from-flowbee-500 to-flowbee-600 text-white border-none rounded-[14px] px-6 py-3.5 text-[15px] font-bold font-sans cursor-pointer w-full shadow-[0_4px_12px_rgba(245,158,11,0.15)] transition-all hover:-translate-y-px hover:shadow-[0_6px_16px_rgba(245,158,11,0.25)] disabled:bg-slate-300 disabled:text-slate-400 disabled:shadow-none disabled:cursor-not-allowed disabled:translate-y-0"
+                className="bg-slate-900 text-white rounded-lg px-6 py-3 text-sm font-medium cursor-pointer w-full shadow-sm transition-all hover:bg-slate-800 hover:shadow-md border border-slate-800 disabled:bg-slate-200 disabled:text-slate-400 disabled:border-slate-200 disabled:shadow-none disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 flex items-center justify-center gap-2"
                 type="submit"
                 disabled={isSaving}
               >
-                {isSaving ? <span className="w-[18px] h-[18px] border-2 border-white/20 border-t-white rounded-full inline-block animate-spin-fast"></span> : "Save Configurations"}
+                {isSaving ? <span className="w-4 h-4 border-2 border-slate-300 border-t-white rounded-full inline-block animate-spin-fast"></span> : null}
+                {isSaving ? "Saving..." : "Save Configurations"}
               </button>
             </div>
           </div>
 
           {/* Right Column (Widget / Help column) */}
           <div className="flex flex-col gap-6">
-            <Card title="Editing Tips">
+            <Card title="Editing Tips" icon={<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>}>
               <div className="flex gap-3 mb-4">
-                <div className="w-2 h-2 rounded-full bg-flowbee-500 mt-1.5 shrink-0"></div>
+                <div className="w-1.5 h-1.5 rounded-full bg-slate-800 mt-2 shrink-0"></div>
                 <div>
-                  <h4 className="text-[13.5px] font-semibold text-gray-800 m-0">Sync Approved Templates</h4>
-                  <p className="text-[12.5px] text-gray-500 mt-1 m-0 leading-relaxed">Make sure to enter your API key and registered phone number, then click **Sync Templates** to load your WhatsApp Business approved templates dynamically.</p>
+                  <h4 className="text-[13.5px] font-semibold text-slate-800 m-0">Sync Approved Templates</h4>
+                  <p className="text-[12.5px] text-slate-500 mt-1 m-0 leading-relaxed">Make sure to enter your API key and registered phone number, then click **Sync Templates** to load your WhatsApp Business approved templates dynamically.</p>
                 </div>
               </div>
               <div className="flex gap-3">
-                <div className="w-2 h-2 rounded-full bg-flowbee-500 mt-1.5 shrink-0"></div>
+                <div className="w-1.5 h-1.5 rounded-full bg-slate-800 mt-2 shrink-0"></div>
                 <div>
-                  <h4 className="text-[13.5px] font-semibold text-gray-800 m-0">Admin Notification Recipient</h4>
-                  <p className="text-[12.5px] text-gray-500 mt-1 m-0 leading-relaxed">Provide a valid phone number (with country code) to receive administrative notifications regarding order triggers.</p>
+                  <h4 className="text-[13.5px] font-semibold text-slate-800 m-0">Admin Notification Recipient</h4>
+                  <p className="text-[12.5px] text-slate-500 mt-1 m-0 leading-relaxed">Provide a valid phone number (with country code) to receive administrative notifications regarding order triggers.</p>
                 </div>
               </div>
             </Card>
@@ -362,9 +363,9 @@ export default function Settings() {
 
 function Card({ title, icon, children }) {
   return (
-    <div className="bg-white border border-flowbee-200 rounded-[20px] shadow-[0_4px_6px_rgba(0,0,0,0.01)] overflow-hidden">
-      <div className="px-7 py-6 border-b border-flowbee-100 flex justify-between items-center">
-        <h2 className="font-display text-base font-bold text-flowbee-900 flex items-center gap-2.5 m-0">
+    <div className="bg-white border border-slate-200/60 rounded-2xl shadow-sm overflow-hidden">
+      <div className="px-7 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+        <h2 className="font-display text-[15px] font-semibold text-slate-800 flex items-center gap-2 m-0">
           {icon}
           {title}
         </h2>
@@ -377,7 +378,7 @@ function Card({ title, icon, children }) {
 function FieldGroup({ label, children }) {
   return (
     <div className="mb-5 last:mb-0">
-      <span className="text-[13.5px] font-semibold text-flowbee-900 mb-2 block">{label}</span>
+      <span className="text-[13.5px] font-semibold text-slate-800 mb-2 block">{label}</span>
       {children}
     </div>
   );
@@ -385,13 +386,13 @@ function FieldGroup({ label, children }) {
 
 function MetricCard({ label, value, icon, iconBg, iconColor }) {
   return (
-    <div className="bg-white border border-flowbee-200 rounded-2xl p-6 flex items-center gap-5 shadow-[0_4px_6px_rgba(0,0,0,0.01)]">
-      <div className={`${iconBg} ${iconColor} w-13 h-13 rounded-xl flex items-center justify-center`}>
+    <div className="bg-white border border-slate-200/60 rounded-2xl p-6 flex items-center gap-5 shadow-sm transition-all hover:shadow-md hover:border-slate-300 hover:-translate-y-0.5">
+      <div className={`${iconBg} ${iconColor} w-12 h-12 rounded-xl flex items-center justify-center`}>
         {icon}
       </div>
       <div className="flex flex-col">
-        <span className="text-[13px] text-flowbee-700 font-medium">{label}</span>
-        <span className="text-base font-bold text-flowbee-900 mt-1">{value}</span>
+        <span className="text-[13px] text-slate-500 font-medium tracking-wide">{label}</span>
+        <span className="text-[15px] font-bold text-slate-900 mt-1">{value}</span>
       </div>
     </div>
   );
@@ -400,7 +401,7 @@ function MetricCard({ label, value, icon, iconBg, iconColor }) {
 function TemplateSelect({ label, name, value, onChange, templateList, selectClass, isLast = false }) {
   return (
     <div className={isLast ? "" : "mb-5"}>
-      <span className="text-[13.5px] font-semibold text-flowbee-900 mb-2 block">{label}</span>
+      <span className="text-[13.5px] font-semibold text-slate-800 mb-2 block">{label}</span>
       <select
         className={selectClass}
         name={name}
