@@ -232,16 +232,27 @@ export default function Index() {
                     const badgeClass = log.status === "success" ? "bg-emerald-50 text-emerald-600" : log.status === "failed" ? "bg-red-50 text-red-600" : log.status === "pending" ? "bg-amber-50 text-amber-600" : "bg-blue-50 text-blue-600";
                     const badgeText = log.status === "success" ? "Success" : log.status === "failed" ? "Failed" : log.status === "pending" ? "Pending" : "Info";
 
-                    const date = log.createdAt?.toMillis
-                      ? new Date(log.createdAt.toMillis())
-                      : (log.createdAt ? new Date(log.createdAt) : new Date());
+                    let date = new Date();
+                    if (log.createdAt?.toMillis) {
+                      date = new Date(log.createdAt.toMillis());
+                    } else if (log.createdAt?._seconds) {
+                      date = new Date(log.createdAt._seconds * 1000);
+                    } else if (log.createdAt?.seconds) {
+                      date = new Date(log.createdAt.seconds * 1000);
+                    } else if (log.createdAt) {
+                      date = new Date(log.createdAt);
+                    }
+                    if (isNaN(date.getTime())) date = new Date();
+
+                    const cleanDetail = (log.detail || "").replace(" for Customer", "");
 
                     return (
                       <div className="p-3 rounded-[10px] bg-gray-50 border border-gray-100 flex items-center gap-3 text-xs" key={log.id}>
                         <span className={`font-bold text-[10px] px-1.5 py-0.5 rounded uppercase ${badgeClass}`}>{badgeText}</span>
                         <div className="grow">
-                          <div>{log.title}</div>
-                          <span className="text-gray-400 text-[11px]">{log.detail} — {date.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                          <div className="font-semibold text-gray-800">{log.title}</div>
+                          <span className="text-gray-500 text-[11px]">{cleanDetail}</span>
+                          <span className="text-gray-400 text-[11px] ml-2">— {date.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
                       </div>
                     );
