@@ -7,6 +7,7 @@ import {
 import { mapShopifyOrderToNotificationDetails } from "./order.mapper";
 import { logToFile } from "../../utils/logger.server";
 import { saveCheckoutRecord } from "./checkout-notification.repository.server";
+import { saveActivityLog } from "./activity-log.repository.server";
 
 const processedWebhooks = new Set();
 setInterval(() => {
@@ -132,6 +133,9 @@ export async function processOrderWebhook({ shop, topic, payload, webhookId }) {
   console.log("[WEBHOOK] Order Event Details:", logData);
   logToFile(logData, "orders.log");
 
+  const topicLabel = normalizedTopic.replace("ORDERS_", "").toLowerCase();
+  const eventType = `order_${topicLabel}`;
+
   try {
     const result = await sendFlowbeeTemplateMessage({
       settings,
@@ -152,6 +156,16 @@ export async function processOrderWebhook({ shop, topic, payload, webhookId }) {
       "orders.log",
     );
 
+    // Log successful notification to activity feed
+    await saveActivityLog({
+      shop: settingsShop,
+      type: eventType,
+      status: "success",
+      title: `Order ${orderDetails.orderNumber} — ${topicLabel.charAt(0).toUpperCase() + topicLabel.slice(1)}`,
+      detail: `WhatsApp sent to +${settings.flowbeeNotifyPhone} for ${customerNameVal}`,
+      meta: { orderNumber: orderDetails.orderNumber, templateId, customerName: customerNameVal, totalAmount: totalVal },
+    });
+
     return { ok: true, skipped: null, result };
   } catch (error) {
     console.error(
@@ -170,6 +184,16 @@ export async function processOrderWebhook({ shop, topic, payload, webhookId }) {
       },
       "orders.log",
     );
+
+    // Log failed notification to activity feed
+    await saveActivityLog({
+      shop: settingsShop,
+      type: eventType,
+      status: "failed",
+      title: `Order ${orderDetails.orderNumber} — ${topicLabel.charAt(0).toUpperCase() + topicLabel.slice(1)}`,
+      detail: `Failed: ${error.message}`,
+      meta: { orderNumber: orderDetails.orderNumber, templateId, error: error.message },
+    });
 
     return { ok: false, skipped: null, error };
   }

@@ -4,8 +4,15 @@ import {
 } from "./checkout-notification.repository.server";
 import { getFlowbeeSettings } from "../flowbee/flowbee-settings.service.server";
 import { sendFlowbeeTemplateMessage } from "../flowbee/flowbee-api.server";
+import { saveActivityLog } from "./activity-log.repository.server";
 
 import { logToFile } from "../../utils/logger.server";
+
+function formatDelayLabel(seconds) {
+  if (seconds >= 3600) return `${seconds / 3600} hour(s)`;
+  if (seconds >= 60) return `${seconds / 60} minute(s)`;
+  return `${seconds} second(s)`;
+}
 
 export async function processCheckoutWebhook({ shop, payload, topic, admin }) {
   console.log(`[WEBHOOK] Received checkout event: ${topic} for shop: ${shop}`);
@@ -118,6 +125,16 @@ export async function processCheckoutWebhook({ shop, payload, topic, admin }) {
     recoveryChainId,
   });
 
+  // Log checkout tracking to activity feed
+  await saveActivityLog({
+    shop,
+    type: "checkout_tracked",
+    status: "pending",
+    title: `Checkout abandoned by ${customerName}`,
+    detail: `Recovery scheduled in ${formatDelayLabel(delaySeconds)} — ${products}`,
+    meta: { checkoutId, phone: normalizedPhone, totalPrice, products },
+  });
+
   // 2. Schedule the notification
   const delayMs = delaySeconds * 1000;
   console.log(
@@ -188,6 +205,16 @@ async function executeRecovery(checkoutId, shop, recoveryChainId) {
       notified: true,
     });
 
+    // Log successful recovery message to activity feed
+    await saveActivityLog({
+      shop,
+      type: "checkout_recovery",
+      status: "success",
+      title: `Recovery sent to ${freshCheckout.customerName}`,
+      detail: `Attempt ${newAttempts}/${maxAttempts} — WhatsApp to +${freshCheckout.phone}`,
+      meta: { checkoutId, phone: freshCheckout.phone, templateId, attempt: newAttempts },
+    });
+
     if (newAttempts < maxAttempts) {
       const intervalMs = intervalSeconds * 1000;
       console.log(`[ABANDONED CHECKOUT] Scheduling next recovery attempt for ${checkoutId} in ${intervalSeconds}s.`);
@@ -200,5 +227,15 @@ async function executeRecovery(checkoutId, shop, recoveryChainId) {
       `[ABANDONED CHECKOUT] Failed to run scheduled checkout task for ${checkoutId}:`,
       err.message,
     );
+
+    // Log failed recovery to activity feed
+    await saveActivityLog({
+      shop,
+      type: "checkout_recovery",
+      status: "failed",
+      title: `Recovery failed for checkout ${checkoutId}`,
+      detail: `Error: ${err.message}`,
+      meta: { checkoutId, error: err.message },
+    });
   }
 }

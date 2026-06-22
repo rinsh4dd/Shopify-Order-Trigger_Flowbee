@@ -5,11 +5,13 @@ import {
   getFlowbeeSettings,
   getFlowbeeTemplates,
 } from "../features/flowbee/flowbee-settings.service.server";
+import { getRecentActivityLogs } from "../features/orders/activity-log.repository.server";
 
 export const loader = async ({ request }) => {
   const { session } = await authenticate.admin(request);
   const settings = await getFlowbeeSettings(session.shop);
-  return { settings, shop: session.shop };
+  const activityLogs = await getRecentActivityLogs(session.shop);
+  return { settings, shop: session.shop, activityLogs };
 };
 
 export const action = async ({ request }) => {
@@ -64,7 +66,7 @@ function formatDelay(seconds) {
 }
 
 export default function Index() {
-  const { settings, shop } = useLoaderData();
+  const { settings, shop, activityLogs = [] } = useLoaderData();
 
   const isConnected = !!settings?.flowbeeApiKey;
   const activeTemplateOrderCreated = settings?.flowbeeTemplateOrderCreated || settings?.flowbeeTemplateId;
@@ -504,6 +506,16 @@ export default function Index() {
           color: #0ca678;
         }
 
+        .log-badge.failed {
+          background: #fff0f0;
+          color: #e03131;
+        }
+
+        .log-badge.pending {
+          background: #fff9db;
+          color: #e67700;
+        }
+
         .log-badge.info {
           background: #e7f5ff;
           color: #1c7ed6;
@@ -812,34 +824,37 @@ export default function Index() {
             </div>
           </div>
 
-          {/* Simulated Live Activities logs */}
+          {/* Real Activity Monitor */}
           <div className="dash-card">
             <div className="dash-card-header">
               <h2 className="dash-card-title">Activity Monitor</h2>
             </div>
             <div className="dash-card-body" style={{ padding: '24px' }}>
               <div className="logs-list">
-                <div className="log-item">
-                  <span className="log-badge success">Success</span>
-                  <div className="log-info">
-                    <div>Sent Order Confirmation #1011</div>
-                    <span className="log-time">Just now</span>
+                {activityLogs.length === 0 ? (
+                  <div style={{ textAlign: "center", color: "#6b7280", fontSize: "13px", padding: "10px 0" }}>
+                    No activity events yet. Events will appear here once orders are placed or abandoned checkouts are detected.
                   </div>
-                </div>
-                <div className="log-item">
-                  <span className="log-badge info">Queued</span>
-                  <div className="log-info">
-                    <div>Checkout Recovery queued for checkout #9923</div>
-                    <span className="log-time">5 mins ago</span>
-                  </div>
-                </div>
-                <div className="log-item">
-                  <span className="log-badge success">Success</span>
-                  <div className="log-info">
-                    <div>Sent Order Confirmed #1010</div>
-                    <span className="log-time">22 mins ago</span>
-                  </div>
-                </div>
+                ) : (
+                  activityLogs.map((log) => {
+                    const badgeClass = log.status === "success" ? "success" : log.status === "failed" ? "failed" : log.status === "pending" ? "pending" : "info";
+                    const badgeText = log.status === "success" ? "Success" : log.status === "failed" ? "Failed" : log.status === "pending" ? "Pending" : "Info";
+                    
+                    const date = log.createdAt?.toMillis 
+                      ? new Date(log.createdAt.toMillis()) 
+                      : (log.createdAt ? new Date(log.createdAt) : new Date());
+                    
+                    return (
+                      <div className="log-item" key={log.id}>
+                        <span className={`log-badge ${badgeClass}`}>{badgeText}</span>
+                        <div className="log-info">
+                          <div>{log.title}</div>
+                          <span className="log-time">{log.detail} — {date.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
           </div>
