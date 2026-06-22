@@ -780,14 +780,6 @@ export default function Index() {
                 <span className="info-label">Recovery Schedule</span>
                 <span className="info-value">Send recovery message after {formatDelay(settings?.flowbeeAbandonedCartDelay)}</span>
               </div>
-              <div className="info-row">
-                <span className="info-label">Maximum Attempts</span>
-                <span className="info-value">{settings?.flowbeeAbandonedCartCount || "1"} attempt{parseInt(settings?.flowbeeAbandonedCartCount || "1") > 1 ? "s" : ""}</span>
-              </div>
-              <div className="info-row">
-                <span className="info-label">Retry Interval</span>
-                <span className="info-value">Every {formatDelay(settings?.flowbeeAbandonedCartInterval)}</span>
-              </div>
             </div>
           </div>
         </div>
